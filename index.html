@@ -1,0 +1,1258 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>StudyDesk</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#C98A12">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="StudyDesk">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" href="icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Public+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+:root{
+  --ground:#EEF0F4; --surface:#FFFFFF; --surface-2:#F5F6F9;
+  --ink:#1B2130; --ink-2:#5A6377; --ink-3:#8A93A6;
+  --line:#E1E5EC; --line-2:#D2D8E2;
+  --gold:#C98A12; --gold-soft:#FBEFD3; --gold-ink:#8A5D06;
+  --teal:#12897E; --teal-soft:#D6EEEB;
+  --rose:#C4453B; --rose-soft:#F7DEDB;
+  --green:#2E8B57; --green-soft:#DCEFE2;
+  --blue:#3F6FD6; --blue-soft:#DCE6FA;
+  --accent:var(--gold);
+  --shadow:0 1px 2px rgba(20,28,45,.06),0 8px 24px rgba(20,28,45,.06);
+  --shadow-lift:0 2px 6px rgba(20,28,45,.10),0 16px 40px rgba(20,28,45,.12);
+  --radius:16px; --radius-sm:11px;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --ground:#0F1420; --surface:#171D2B; --surface-2:#1E2536;
+  --ink:#EAEDF4; --ink-2:#A4ADC0; --ink-3:#727C92;
+  --line:#28303F; --line-2:#333C4E;
+  --gold:#E9B44C; --gold-soft:#3A2E12; --gold-ink:#F0C572;
+  --teal:#3FB3A6; --teal-soft:#123230; --rose:#E3766C; --rose-soft:#361D1B;
+  --green:#57C285; --green-soft:#12321F; --blue:#6E97E8; --blue-soft:#182642;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 10px 30px rgba(0,0,0,.35);
+  --shadow-lift:0 2px 8px rgba(0,0,0,.4),0 20px 46px rgba(0,0,0,.5)}}
+:root[data-theme="dark"]{
+  --ground:#0F1420; --surface:#171D2B; --surface-2:#1E2536;
+  --ink:#EAEDF4; --ink-2:#A4ADC0; --ink-3:#727C92;
+  --line:#28303F; --line-2:#333C4E;
+  --gold:#E9B44C; --gold-soft:#3A2E12; --gold-ink:#F0C572;
+  --teal:#3FB3A6; --teal-soft:#123230; --rose:#E3766C; --rose-soft:#361D1B;
+  --green:#57C285; --green-soft:#12321F; --blue:#6E97E8; --blue-soft:#182642;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 10px 30px rgba(0,0,0,.35);
+  --shadow-lift:0 2px 8px rgba(0,0,0,.4),0 20px 46px rgba(0,0,0,.5)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--ground);color:var(--ink);
+  font-family:"Public Sans",system-ui,-apple-system,sans-serif;-webkit-font-smoothing:antialiased;line-height:1.45}
+button{font-family:inherit;cursor:pointer}
+input,textarea,select{font-family:inherit}
+a{color:inherit}
+:focus-visible{outline:2.5px solid var(--accent);outline-offset:2px;border-radius:6px}
+
+.app{max-width:470px;margin:0 auto;min-height:100vh;min-height:100dvh;background:var(--ground);
+  display:flex;flex-direction:column;position:relative;box-shadow:0 0 0 1px var(--line)}
+@media(min-width:520px){.app{margin-top:18px;margin-bottom:18px;min-height:calc(100dvh - 36px);
+  border-radius:26px;overflow:hidden;box-shadow:var(--shadow-lift)}}
+.top{padding:22px 20px 10px;display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.hello{font-family:"Fraunces",Georgia,serif;font-weight:600;font-size:1.55rem;letter-spacing:-.01em;text-wrap:balance;margin:0 0 2px;line-height:1.1}
+.hello em{font-style:italic;color:var(--gold-ink)}
+:root[data-theme="dark"] .hello em,:root:not([data-theme="light"]) .hello em{color:var(--gold)}
+.datebar{color:var(--ink-2);font-size:.82rem;font-weight:500;text-transform:uppercase;letter-spacing:.06em}
+.themebtn{flex:none;width:38px;height:38px;border-radius:11px;border:1px solid var(--line-2);
+  background:var(--surface);color:var(--ink-2);font-size:1.05rem;display:grid;place-items:center;box-shadow:var(--shadow)}
+.themebtn:active{transform:scale(.94)}
+.scroll{flex:1;overflow-y:auto;padding:6px 16px 108px;-webkit-overflow-scrolling:touch}
+.view{display:none;animation:fade .28s ease}.view.on{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+@media(prefers-reduced-motion:reduce){.view,.app *{animation:none!important}}
+.eyebrow{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--ink-3);
+  margin:18px 4px 9px;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.eyebrow .count{color:var(--accent)}
+.linkbtn{border:none;background:none;color:var(--accent);font-size:.74rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;padding:2px 4px}
+
+/* exams */
+.exam-strip{display:flex;gap:10px;overflow-x:auto;padding:2px 4px 4px;margin:0 -2px;scrollbar-width:none}
+.exam-strip::-webkit-scrollbar{display:none}
+.exam{flex:none;min-width:124px;padding:13px 14px;border-radius:var(--radius-sm);background:var(--surface);
+  border:1px solid var(--line);box-shadow:var(--shadow);position:relative;overflow:hidden}
+.exam::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--teal)}
+.exam.warn::before{background:var(--gold)}.exam.soon::before{background:var(--rose)}
+.exam .d{font-family:"IBM Plex Mono",monospace;font-weight:600;font-size:1.5rem;line-height:1;font-variant-numeric:tabular-nums}
+.exam .d small{font-size:.62rem;font-weight:500;color:var(--ink-3);text-transform:uppercase;letter-spacing:.08em}
+.exam .nm{font-size:.82rem;font-weight:600;margin-top:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.exam .dt{font-size:.7rem;color:var(--ink-3);margin-top:1px;display:flex;align-items:center;gap:6px}
+.exam .cal{color:var(--accent);text-decoration:none;font-weight:700}
+.exam .x{position:absolute;top:5px;right:6px;width:18px;height:18px;border:none;background:none;color:var(--ink-3);font-size:.9rem;line-height:1;border-radius:5px;opacity:.6}
+.exam-add{flex:none;min-width:52px;border:1.5px dashed var(--line-2);background:none;color:var(--ink-3);border-radius:var(--radius-sm);font-size:1.4rem}
+
+/* project + day chips */
+.chips{display:flex;gap:7px;overflow-x:auto;padding:2px 4px 2px;margin:0 -2px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;padding:7px 13px;border-radius:20px;border:1px solid var(--line-2);background:var(--surface);
+  color:var(--ink-2);font-size:.8rem;font-weight:600;display:flex;align-items:center;gap:6px;box-shadow:var(--shadow)}
+.chip .cd{width:8px;height:8px;border-radius:50%}
+.chip.on{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+.chip .cx{margin-left:3px;width:19px;height:19px;border-radius:50%;background:rgba(255,255,255,.22);display:inline-grid;place-items:center;font-size:.72rem;line-height:1}
+.chip .cbadge{margin-left:5px;background:var(--line-2);color:var(--ink-2);border-radius:20px;padding:0 6px;font-size:.66rem;font-weight:700}
+.chip.on .cbadge{background:rgba(255,255,255,.22);color:#fff}
+.chip.add{border-style:dashed;color:var(--ink-3)}
+.sublist{display:flex;flex-direction:column;gap:8px;max-height:46vh;overflow-y:auto}
+.subcard{background:var(--surface-2);border:1px solid var(--line);border-radius:11px;padding:9px 10px}
+.subcard .subtop{display:flex;align-items:center;gap:8px}
+.subcard .subtxt{flex:1;min-width:0;margin:0;padding:8px 10px;font-size:.9rem;font-weight:500;background:var(--surface);border:1px solid var(--line-2);border-radius:8px}
+.subcard .subdel{flex:none;border:none;background:none;color:var(--ink-3);font-size:.95rem;opacity:.55;padding:2px 4px}
+.subcard .subbot{display:flex;align-items:center;gap:8px;margin-top:7px;flex-wrap:wrap}
+.subcard .subdate{flex:none;margin:0;padding:7px 9px;font-size:.78rem;background:var(--surface);border:1px solid var(--line-2);border-radius:8px;color:var(--ink-2);width:auto}
+.subcard .subtoggle{flex:1;border:1px solid var(--line-2);background:var(--surface);color:var(--ink-2);font-size:.78rem;font-weight:700;padding:8px;border-radius:8px}
+.subcard .subtoggle.on{color:#fff}
+.daybar{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:12px 2px 2px}
+.daybar .nav2{display:flex;align-items:center;gap:8px}
+.daybar button.arrow{border:1px solid var(--line-2);background:var(--surface);color:var(--ink-2);width:32px;height:32px;border-radius:9px;font-size:1.05rem;box-shadow:var(--shadow)}
+.daybar .dlabel{font-family:"Fraunces",serif;font-weight:600;font-size:1.1rem;min-width:118px;text-align:center;border:none;background:none;color:inherit;cursor:pointer;padding:4px}
+.daybar .today-btn{border:1px solid var(--line-2);background:var(--surface-2);color:var(--ink-2);padding:7px 12px;border-radius:9px;font-size:.76rem;font-weight:700}
+.viewtog{border:1px solid var(--line-2);background:var(--surface);color:var(--ink-2);padding:7px 11px;border-radius:9px;font-size:.76rem;font-weight:700;box-shadow:var(--shadow)}
+.viewtog.on{background:var(--gold-soft);color:var(--gold-ink);border-color:var(--gold)}
+
+/* add task */
+.addrow{display:flex;gap:8px;margin:12px 4px 2px}
+.addrow input{flex:1;min-width:0;padding:13px 14px;border-radius:var(--radius-sm);border:1px solid var(--line-2);background:var(--surface);color:var(--ink);font-size:.95rem}
+.addrow input::placeholder{color:var(--ink-3)}
+.iadd{flex:none;width:48px;border:none;border-radius:var(--radius-sm);background:var(--ink);color:var(--surface);font-size:1.4rem;box-shadow:var(--shadow)}
+.iadd:active{transform:scale(.95)}
+.quadpick{display:flex;gap:6px;margin:8px 4px 2px;flex-wrap:wrap}
+.quadpick button{flex:1;min-width:0;padding:8px 6px;border-radius:9px;border:1px solid var(--line-2);background:var(--surface);color:var(--ink-2);font-size:.72rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.quadpick button.sel[data-q="q1"]{background:var(--rose-soft);border-color:var(--rose);color:var(--rose)}
+.quadpick button.sel[data-q="q2"]{background:var(--teal-soft);border-color:var(--teal);color:var(--teal)}
+.quadpick button.sel[data-q="q3"]{background:var(--gold-soft);border-color:var(--gold);color:var(--gold-ink)}
+.quadpick button.sel[data-q="q4"]{background:var(--surface-2);border-color:var(--line-2);color:var(--ink-3)}
+
+.grouphd{font-size:.74rem;font-weight:700;color:var(--ink-2);margin:16px 4px 8px;display:flex;align-items:center;gap:8px}
+.grouphd .qbar{width:20px;height:4px;border-radius:3px}
+.tasklist{list-style:none;padding:0;margin:8px 0 0;display:flex;flex-direction:column;gap:8px}
+.task{display:flex;align-items:flex-start;gap:12px;padding:12px 13px;border-radius:var(--radius-sm);background:var(--surface);border:1px solid var(--line);box-shadow:var(--shadow);position:relative;border-left:4px solid var(--line-2)}
+.task.q1{border-left-color:var(--rose)}.task.q2{border-left-color:var(--teal)}
+.task.q3{border-left-color:var(--gold)}.task.q4{border-left-color:var(--ink-3)}
+.task .chk{flex:none;width:23px;height:23px;border-radius:50%;border:2px solid var(--line-2);background:none;margin-top:1px;display:grid;place-items:center;transition:.15s}
+.task .chk svg{width:12px;height:12px;stroke:var(--surface);stroke-width:3;fill:none;opacity:0}
+.task.done .chk{background:var(--teal);border-color:var(--teal)}.task.done .chk svg{opacity:1}
+.task .body{flex:1;min-width:0}
+.task .t{font-weight:500;font-size:.95rem;word-break:break-word}
+.task.done .t{color:var(--ink-3);text-decoration:line-through}
+.task .meta{display:flex;gap:7px;align-items:center;margin-top:4px;font-size:.72rem;color:var(--ink-3);flex-wrap:wrap}
+.pill{padding:2px 8px;border-radius:20px;font-weight:600;font-size:.68rem}
+.pill.over{background:var(--rose);color:#fff}
+.pill.proj{background:var(--blue-soft);color:var(--blue)}
+.pill.place{background:var(--surface-2);color:var(--ink-2)}
+.mini-ic{display:inline-flex;align-items:center;gap:3px}
+.task .cal{flex:none;text-decoration:none;color:var(--accent);font-size:1.02rem;padding:2px 3px;margin-top:1px}
+.thumb{width:40px;height:40px;border-radius:8px;object-fit:cover;flex:none;border:1px solid var(--line)}
+.empty{text-align:center;color:var(--ink-3);font-size:.9rem;padding:30px 20px}
+.empty .big{font-size:1.7rem;margin-bottom:6px}
+.task .tgrip{flex:none;border:none;background:none;color:var(--ink-3);font-size:1.1rem;line-height:1;cursor:grab;touch-action:none;padding:0 2px;align-self:center;opacity:.5}
+/* shifts */
+.shiftrow{display:flex;flex-direction:column;gap:8px;margin-top:2px}
+.shiftpill{display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--line);border-left-width:4px;border-radius:var(--radius-sm);box-shadow:var(--shadow);padding:11px 13px}
+.shiftpill .sdot{width:10px;height:10px;border-radius:50%;flex:none}
+.shiftpill .sinfo{flex:1;min-width:0;font-size:.9rem}
+.shiftpill .sinfo b{font-weight:600}
+.shiftpill .scal{flex:none;text-decoration:none;color:var(--accent);font-size:1.05rem}
+.shiftempty{text-align:center;color:var(--ink-3);font-size:.82rem;padding:12px;border:1.5px dashed var(--line-2);border-radius:var(--radius-sm)}
+/* habits on today */
+.todayhabits{display:flex;flex-wrap:wrap;gap:8px;margin-top:2px}
+.thchip{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line-2);background:var(--surface);color:var(--ink-2);font-size:.85rem;font-weight:600;padding:8px 13px;border-radius:22px;box-shadow:var(--shadow)}
+.thchip.on{color:#fff}
+.thchip.future{opacity:.4}
+.thchip .thmark{font-size:.9rem}
+
+/* focus */
+.focuswrap{display:flex;flex-direction:column;align-items:center;padding:14px 4px 4px}
+.ftarget{display:flex;align-items:center;gap:10px;width:100%;background:var(--gold-soft);border:1px solid var(--gold);border-radius:var(--radius-sm);padding:10px 13px;margin-bottom:16px}
+.ftarget .ftgt{flex:1;min-width:0;font-size:.86rem;color:var(--gold-ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+:root[data-theme="dark"] .ftarget .ftgt,:root:not([data-theme="light"]) .ftarget .ftgt{color:var(--ink)}
+.ftarget .ftend{flex:none;border:none;background:var(--gold-ink);color:#fff;font-size:.76rem;font-weight:700;padding:7px 12px;border-radius:9px}
+:root[data-theme="dark"] .ftarget .ftend,:root:not([data-theme="light"]) .ftarget .ftend{background:var(--gold);color:#25190a}
+.ftarget .ftclear{flex:none;border:none;background:none;color:var(--gold-ink);font-size:1rem;opacity:.7}
+.task .focusbtn{flex:none;border:1px solid var(--line-2);background:var(--surface-2);color:var(--teal);font-size:.72rem;width:28px;height:28px;border-radius:8px;margin-top:1px}
+.mode-tabs{display:inline-flex;background:var(--surface-2);border:1px solid var(--line);border-radius:12px;padding:4px;gap:4px;margin-bottom:20px}
+.mode-tabs button{border:none;background:none;color:var(--ink-2);font-size:.82rem;font-weight:600;padding:8px 15px;border-radius:9px}
+.mode-tabs button.on{background:var(--surface);color:var(--ink);box-shadow:var(--shadow)}
+:root[data-theme="dark"] .mode-tabs button.on,:root:not([data-theme="light"]) .mode-tabs button.on{background:var(--surface-2);color:var(--gold)}
+.ring{position:relative;width:236px;height:236px;margin:4px 0 8px}
+.ring svg{transform:rotate(-90deg);width:100%;height:100%}
+.ring .bg{fill:none;stroke:var(--line);stroke-width:11}
+.ring .fg{fill:none;stroke:var(--accent);stroke-width:11;stroke-linecap:round;transition:stroke-dashoffset .5s linear}
+.ring.brk .fg{stroke:var(--teal)}
+.ring .inner{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.ring .time{font-family:"IBM Plex Mono",monospace;font-size:3.1rem;font-weight:500;line-height:1;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.ring .lbl{font-size:.74rem;font-weight:700;text-transform:uppercase;letter-spacing:.14em;color:var(--ink-3);margin-top:8px}
+.controls{display:flex;gap:12px;margin-top:14px}
+.bigbtn{padding:14px 40px;border-radius:14px;border:none;font-size:1rem;font-weight:700;background:var(--ink);color:var(--surface);box-shadow:var(--shadow-lift);letter-spacing:.02em}
+.bigbtn.run{background:var(--gold);color:#25190a}.bigbtn:active{transform:scale(.97)}
+.ghost{padding:14px 20px;border-radius:14px;border:1px solid var(--line-2);background:var(--surface);color:var(--ink-2);font-size:1.15rem}
+.stats{display:flex;gap:10px;margin-top:24px;width:100%}
+.stat{flex:1;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-sm);padding:14px 12px;text-align:center;box-shadow:var(--shadow)}
+.stat .n{font-family:"IBM Plex Mono",monospace;font-size:1.6rem;font-weight:600;line-height:1;color:var(--accent)}
+.stat.b .n{color:var(--teal)}.stat.c .n{color:var(--rose)}
+.stat .l{font-size:.68rem;color:var(--ink-3);text-transform:uppercase;letter-spacing:.06em;margin-top:6px;font-weight:600}
+.setts{display:flex;gap:18px;justify-content:center;margin-top:18px;font-size:.82rem;color:var(--ink-2)}
+.setts label{display:flex;align-items:center;gap:7px;font-weight:600}
+.setts input{width:52px;padding:6px 8px;border-radius:8px;border:1px solid var(--line-2);background:var(--surface);color:var(--ink);text-align:center;font-family:"IBM Plex Mono",monospace}
+.fstats{width:100%;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px;margin-top:22px}
+.fstats .ttl{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--ink-3);margin-bottom:14px}
+.barchart{display:flex;align-items:flex-end;gap:8px;height:96px}
+.barchart .col{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;height:100%;justify-content:flex-end}
+.barchart .bar{width:100%;max-width:26px;background:var(--gold);border-radius:6px 6px 3px 3px;min-height:3px;transition:height .4s}
+.barchart .bar.today{background:var(--rose)}
+.barchart .cval{font-family:"IBM Plex Mono",monospace;font-size:.66rem;color:var(--ink-2);font-weight:600}
+.barchart .cd{font-size:.64rem;color:var(--ink-3);font-weight:600}
+
+/* habits */
+.habitlist{display:flex;flex-direction:column;gap:10px;margin-top:4px}
+.habit{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-sm);box-shadow:var(--shadow);padding:13px 14px}
+.habit .hrow{display:flex;align-items:center;gap:12px}
+.habit .hdot{width:12px;height:12px;border-radius:50%;flex:none}
+.habit .hnm{font-weight:600;font-size:.96rem;flex:1;min-width:0}
+.habit .streak{font-family:"IBM Plex Mono",monospace;font-size:.8rem;color:var(--gold-ink);font-weight:600;display:flex;align-items:center;gap:3px}
+:root[data-theme="dark"] .habit .streak,:root:not([data-theme="light"]) .habit .streak{color:var(--gold)}
+.habit .hdel{border:none;background:none;color:var(--ink-3);font-size:.95rem;opacity:.5;padding:2px}
+.habit .hnm{flex:1;min-width:0}
+.hgrip,.subgrip{flex:none;border:none;background:none;color:var(--ink-3);font-size:1.15rem;line-height:1;cursor:grab;touch-action:none;padding:2px 4px;opacity:.55}
+.dragging{opacity:.65;box-shadow:var(--shadow-lift);transform:scale(1.02)}
+.subcard.done .subtxt{text-decoration:line-through;color:var(--ink-3)}
+.subcard .subgrip{align-self:center}
+.qflag{flex:none;border:1px solid var(--line-2);border-radius:8px;padding:7px 10px;font-size:.74rem;font-weight:700;color:#fff;min-width:70px}
+.qflag.q-q1{background:var(--rose)}.qflag.q-q2{background:var(--teal)}.qflag.q-q3{background:var(--gold);color:#25190a}.qflag.q-q4{background:var(--ink-3)}
+.subdone{flex:none;display:flex;align-items:center;gap:5px;font-size:.78rem;font-weight:600;color:var(--ink-2);margin:0}
+.subdone input{width:auto;margin:0;transform:scale(1.15)}
+.week{display:flex;gap:6px;margin-top:12px}
+.week .day{flex:1;display:flex;flex-direction:column;align-items:center;gap:5px}
+.week .day .lab{font-size:.6rem;color:var(--ink-3);font-weight:600;text-transform:uppercase}
+.week .day .cell{width:100%;aspect-ratio:1;max-width:34px;border-radius:9px;border:1.5px solid var(--line-2);background:var(--surface-2);display:grid;place-items:center;color:transparent;font-size:.9rem}
+.week .day .cell.done{border-color:transparent;color:#fff}
+.week .day .cell.future{opacity:.4}
+.week .day.istoday .lab{color:var(--accent)}
+
+/* money */
+.mhead{display:flex;align-items:center;justify-content:space-between;margin:6px 2px 2px}
+.mnav{display:flex;align-items:center;gap:10px}
+.mnav button{border:1px solid var(--line-2);background:var(--surface);color:var(--ink-2);width:30px;height:30px;border-radius:9px;font-size:1rem;box-shadow:var(--shadow)}
+.mnav .mo{font-family:"Fraunces",serif;font-weight:600;font-size:1.05rem;min-width:120px;text-align:center}
+.balcard{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px;margin-top:12px}
+.balcard .bal-l{font-size:.72rem;text-transform:uppercase;letter-spacing:.1em;color:var(--ink-3);font-weight:700}
+.balcard .bal{font-family:"IBM Plex Mono",monospace;font-size:2.2rem;font-weight:600;line-height:1.05;margin-top:3px;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+.balcard .bal.neg{color:var(--rose)}
+.io{display:flex;gap:10px;margin-top:16px}
+.io .box{flex:1;background:var(--surface-2);border-radius:var(--radius-sm);padding:11px 13px}
+.io .box .k{font-size:.72rem;color:var(--ink-3);font-weight:600;display:flex;align-items:center;gap:6px}
+.io .box .k::before{content:"";width:8px;height:8px;border-radius:50%}
+.io .box.in .k::before{background:var(--green)}.io .box.out .k::before{background:var(--rose)}
+.io .box .v{font-family:"IBM Plex Mono",monospace;font-size:1.12rem;font-weight:600;margin-top:3px;font-variant-numeric:tabular-nums}
+.io .box.in .v{color:var(--green)}.io .box.out .v{color:var(--rose)}
+.addbtns{display:flex;gap:10px;margin-top:14px}
+.addbtns button{flex:1;padding:13px;border-radius:var(--radius-sm);border:none;font-weight:700;font-size:.9rem;box-shadow:var(--shadow)}
+.addbtns .out{background:var(--rose-soft);color:var(--rose)}
+.addbtns .in{background:var(--green-soft);color:var(--green)}
+.addbtns .scb{background:var(--ink);color:var(--surface);flex:0 0 auto;padding:13px 16px}
+.catbars{margin-top:6px;display:flex;flex-direction:column;gap:10px}
+.catrow{display:flex;align-items:center;gap:11px}
+.catrow .dot{width:11px;height:11px;border-radius:50%;flex:none}
+.catrow .nm{font-size:.85rem;font-weight:500;flex:none;width:96px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.catrow .track{flex:1;height:9px;background:var(--surface-2);border-radius:6px;overflow:hidden}
+.catrow .track i{display:block;height:100%;border-radius:6px}
+.catrow .amt{font-family:"IBM Plex Mono",monospace;font-size:.82rem;font-weight:600;flex:none;width:74px;text-align:right;font-variant-numeric:tabular-nums}
+.txlist{list-style:none;padding:0;margin:10px 0 0;display:flex;flex-direction:column;gap:7px}
+.tx{display:flex;align-items:center;gap:12px;padding:11px 13px;border-radius:var(--radius-sm);background:var(--surface);border:1px solid var(--line);box-shadow:var(--shadow)}
+.tx .tdot{width:34px;height:34px;border-radius:10px;flex:none;display:grid;place-items:center;font-size:.72rem;font-weight:700;color:#fff}
+.tx .ti{flex:1;min-width:0}
+.tx .ti .n{font-weight:600;font-size:.92rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tx .ti .s{font-size:.72rem;color:var(--ink-3);margin-top:1px}
+.tx .amt{font-family:"IBM Plex Mono",monospace;font-weight:600;font-size:.95rem;flex:none;font-variant-numeric:tabular-nums}
+.tx .amt.in{color:var(--green)}.tx .amt.out{color:var(--ink)}
+.tx .slipview{flex:none;border:1px solid var(--line-2);background:var(--surface-2);font-size:.9rem;width:28px;height:28px;border-radius:8px}
+.tx .send{flex:none;border:1px solid var(--line-2);background:var(--surface-2);color:var(--blue);font-size:.9rem;width:28px;height:28px;border-radius:8px;display:grid;place-items:center;text-decoration:none}
+.tx .send.done{color:var(--green);border-color:var(--green-soft);background:var(--green-soft)}
+.tx .del{flex:none;border:none;background:none;color:var(--ink-3);font-size:1rem;opacity:.5;padding:2px 3px}
+.togrow{display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--surface-2);border:1px solid var(--line-2);border-radius:11px;padding:11px 13px;font-size:.85rem;font-weight:500;margin-bottom:6px}
+.togrow small{color:var(--ink-3);font-weight:400}
+.togrow input[type=checkbox]{width:auto;margin:0;transform:scale(1.3)}
+.acctbox{background:var(--surface-2);border:1px solid var(--line);border-radius:11px;padding:13px}
+.acctline{font-size:.9rem}.acctline b{font-weight:600}
+.synced{font-size:.82rem;color:var(--teal);font-weight:600;margin-top:4px}
+
+/* calendar picker */
+.calwrap{margin-top:4px}
+.calhd{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.calhd button{border:1px solid var(--line-2);background:var(--surface-2);color:var(--ink-2);width:34px;height:34px;border-radius:9px;font-size:1.05rem}
+.calhd .cmo{font-family:"Fraunces",serif;font-weight:600;font-size:1.1rem}
+.caldow{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:6px}
+.caldow span{text-align:center;font-size:.66rem;font-weight:700;color:var(--ink-3);text-transform:uppercase}
+.calgrid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.calgrid button{aspect-ratio:1;border:none;background:var(--surface-2);color:var(--ink);border-radius:9px;font-size:.9rem;font-weight:600;position:relative;display:grid;place-items:center}
+.calgrid button.blank{background:none;pointer-events:none}
+.calgrid button.today{outline:2px solid var(--gold)}
+.calgrid button.sel{background:var(--ink);color:var(--surface)}
+.calgrid button .tdot2{position:absolute;bottom:5px;width:5px;height:5px;border-radius:50%;background:var(--rose)}
+.calgrid button.sel .tdot2{background:var(--surface)}
+
+/* money budget + dashboard */
+.budgetcard{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:15px 16px;margin-top:12px}
+.budgetcard .bh{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:9px}
+.budgetcard .bt{font-size:.75rem;font-weight:700;color:var(--ink-2)}
+.budgetcard .bv{font-family:"IBM Plex Mono",monospace;font-size:.9rem;font-weight:600}
+.budgetcard .bv b{font-size:1.05rem}
+.budgetcard .btrack{height:12px;background:var(--surface-2);border-radius:7px;overflow:hidden}
+.budgetcard .btrack i{display:block;height:100%;border-radius:7px;background:var(--teal);transition:width .4s}
+.budgetcard.warn .btrack i{background:var(--gold)}
+.budgetcard.over .btrack i{background:var(--rose)}
+.budgetcard .bmsg{font-size:.74rem;margin-top:8px;color:var(--ink-3)}
+.budgetcard.over .bmsg{color:var(--rose);font-weight:600}
+.budgetcard .setlink{border:none;background:none;color:var(--accent);font-weight:700;font-size:.8rem}
+.dashgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:4px}
+.dashtile{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-sm);box-shadow:var(--shadow);padding:13px 14px}
+.dashtile .dl{font-size:.68rem;color:var(--ink-3);text-transform:uppercase;letter-spacing:.05em;font-weight:600}
+.dashtile .dv{font-family:"IBM Plex Mono",monospace;font-size:1.25rem;font-weight:600;margin-top:4px;font-variant-numeric:tabular-nums}
+.dashtile .ds{font-size:.7rem;color:var(--ink-3);margin-top:2px}
+.dashtile .ds.up{color:var(--rose)}.dashtile .ds.down{color:var(--green)}
+.dashcard{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px;margin-top:10px}
+.dashcard .dctl{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-3);margin-bottom:14px}
+#spendChart .bar{background:var(--rose)}#spendChart .bar.today{background:var(--gold)}
+
+/* habit long-term heatmap */
+.habit .stats3{display:flex;gap:16px;margin-top:11px}
+.habit .stats3 .s3{display:flex;flex-direction:column}
+.habit .stats3 .s3 b{font-family:"IBM Plex Mono",monospace;font-size:1.05rem;font-weight:600}
+.habit .stats3 .s3 span{font-size:.64rem;color:var(--ink-3);text-transform:uppercase;letter-spacing:.04em;font-weight:600}
+.heat{display:grid;grid-auto-flow:column;grid-template-rows:repeat(7,1fr);gap:4px;margin-top:12px;overflow-x:auto;padding-bottom:2px}
+.heat .hc{width:15px;height:15px;border-radius:4px;background:var(--surface-2);border:1px solid var(--line)}
+.heat .hc.future{opacity:.25;pointer-events:none}
+.heat .hc.today{box-shadow:0 0 0 2px var(--gold)}
+.hmleg{display:flex;align-items:center;gap:5px;justify-content:flex-end;margin-top:8px;font-size:.66rem;color:var(--ink-3)}
+.hmleg .hc{width:12px;height:12px;border-radius:3px;border:1px solid var(--line)}
+.goalrow{display:flex;align-items:center;gap:10px;margin-top:11px}
+.goalrow .goaltrack{flex:1;height:8px;background:var(--surface-2);border-radius:6px;overflow:hidden}
+.goalrow .goaltrack i{display:block;height:100%;border-radius:6px;transition:width .4s}
+.goalrow .goalv{font-family:"IBM Plex Mono",monospace;font-size:.76rem;font-weight:600;color:var(--ink-2);flex:none}
+.checkbtn{width:100%;margin-top:12px;padding:11px;border-radius:11px;border:1.5px solid var(--line-2);background:var(--surface-2);color:var(--ink-2);font-weight:700;font-size:.9rem}
+.checkbtn.on{color:#fff}
+.finishbtn{width:100%;margin-top:12px;padding:12px;border-radius:11px;border:none;background:var(--gold);color:#25190a;font-weight:700;font-size:.88rem}
+.hnm{cursor:pointer}
+.achlist{display:flex;flex-direction:column;gap:9px;margin-top:2px}
+.achcard{display:flex;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-sm);box-shadow:var(--shadow);padding:12px 14px}
+.achcard .atrophy{width:38px;height:38px;border-radius:11px;flex:none;display:grid;place-items:center;font-size:1.1rem}
+.achcard .ainfo{flex:1;min-width:0}
+.achcard .anm{font-weight:600;font-size:.94rem}
+.achcard .asub{font-size:.72rem;color:var(--ink-3);margin-top:1px}
+.achcard .acont{flex:none;border:1px solid var(--line-2);background:var(--surface-2);color:var(--ink-2);width:30px;height:30px;border-radius:8px;font-size:.95rem}
+.achcard .hdel{flex:none;border:none;background:none;color:var(--ink-3);font-size:.95rem;opacity:.5}
+
+/* nav */
+.nav{position:absolute;left:0;right:0;bottom:0;display:flex;background:var(--surface);border-top:1px solid var(--line);padding:8px 4px calc(8px + env(safe-area-inset-bottom))}
+.nav button{flex:1;border:none;background:none;color:var(--ink-3);display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 2px;font-size:.66rem;font-weight:600;border-radius:12px}
+.nav button svg{width:22px;height:22px;stroke:currentColor;stroke-width:1.9;fill:none}
+.nav button.on{color:var(--accent)}
+
+/* modal */
+.modal{position:fixed;inset:0;z-index:60;background:rgba(15,20,32,.5);display:none;align-items:flex-end;justify-content:center}
+.modal.on{display:flex}
+@media(min-width:520px){.modal{align-items:center}}
+.sheet{background:var(--surface);width:100%;max-width:470px;border-radius:22px 22px 0 0;padding:20px 20px calc(22px + env(safe-area-inset-bottom));box-shadow:var(--shadow-lift);animation:up .3s cubic-bezier(.2,.7,.2,1);max-height:92vh;overflow-y:auto}
+@media(min-width:520px){.sheet{border-radius:22px;margin:20px}}
+@keyframes up{from{transform:translateY(30px);opacity:.6}to{transform:none;opacity:1}}
+.sheet h3{font-family:"Fraunces",serif;margin:0 0 14px;font-size:1.2rem}
+.sheet label.fl{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-3);display:block;margin:4px 2px 5px}
+.sheet input,.sheet textarea,.sheet select{width:100%;padding:12px 13px;border-radius:11px;border:1px solid var(--line-2);background:var(--surface-2);color:var(--ink);font-size:.95rem;margin-bottom:10px}
+.sheet textarea{resize:vertical;min-height:64px}
+.amtin{font-family:"IBM Plex Mono",monospace;font-size:1.5rem!important;font-weight:600;text-align:center}
+.catpick{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:12px}
+.catpick button{padding:8px 13px;border-radius:20px;border:1px solid var(--line-2);background:var(--surface-2);color:var(--ink-2);font-size:.82rem;font-weight:600}
+.catpick button.sel{color:#fff;border-color:transparent}
+.row2{display:flex;gap:10px}
+.row2 button{flex:1;padding:13px;border-radius:12px;font-weight:700;font-size:.92rem;border:none}
+.cancel{background:var(--surface-2);color:var(--ink-2);border:1px solid var(--line-2)!important}
+.save{background:var(--ink);color:var(--surface)}
+.dphoto{width:100%;height:150px;border-radius:12px;object-fit:cover;margin-bottom:10px;border:1px solid var(--line)}
+.photobtn{width:100%;padding:12px;border-radius:11px;border:1.5px dashed var(--line-2);background:var(--surface-2);color:var(--ink-2);font-weight:600;font-size:.88rem;margin-bottom:10px}
+.parsed{background:var(--surface-2);border:1px solid var(--line);border-radius:11px;padding:11px 13px;margin-bottom:11px;font-size:.85rem}
+.parsed b{font-family:"IBM Plex Mono",monospace}
+.hintline{font-size:.76rem;color:var(--ink-3);margin:-4px 2px 11px}
+.matrixrow{display:flex;gap:8px;margin-bottom:8px}
+.qcard{flex:1;background:var(--surface);border:1px solid var(--line);border-top:3px solid var(--line-2);border-radius:var(--radius-sm);box-shadow:var(--shadow);padding:11px;min-height:96px}
+.qcard.q1{border-top-color:var(--rose)}.qcard.q2{border-top-color:var(--teal)}
+.qcard.q3{border-top-color:var(--gold)}.qcard.q4{border-top-color:var(--ink-3)}
+.qcard .qh{font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--ink-2);margin-bottom:8px}
+.qcard .qi{font-size:.82rem;padding:6px 8px;border-radius:8px;background:var(--surface-2);margin-bottom:5px;display:flex;gap:6px;align-items:flex-start}
+.qcard .qi.done{opacity:.5;text-decoration:line-through}
+.qcard .qi button{border:none;background:none;padding:0;font-size:.82rem;flex:none;color:var(--teal)}
+.qcard .qempty{font-size:.74rem;color:var(--ink-3)}
+.toast{position:fixed;left:50%;bottom:96px;transform:translateX(-50%) translateY(20px);background:var(--ink);color:var(--surface);padding:11px 20px;border-radius:12px;font-size:.86rem;font-weight:600;box-shadow:var(--shadow-lift);opacity:0;pointer-events:none;transition:.25s;z-index:80;max-width:88%;text-align:center}
+.toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <div><h1 class="hello" id="hello">Good day.</h1><div class="datebar" id="datebar">—</div></div>
+    <div style="display:flex;gap:8px">
+      <button class="themebtn" id="account" aria-label="บัญชี / ตั้งค่า">👤</button>
+      <button class="themebtn" id="theme" aria-label="Toggle light or dark">◐</button>
+    </div>
+  </header>
+  <div class="scroll">
+    <!-- TODAY -->
+    <section class="view on" id="v-today">
+      <div class="eyebrow">Exams &amp; deadlines</div>
+      <div class="exam-strip" id="examStrip"></div>
+      <div class="eyebrow">Projects</div>
+      <div class="chips" id="projChips"></div>
+      <div class="daybar">
+        <div class="nav2">
+          <button class="arrow" id="dayPrev" aria-label="Previous day">‹</button>
+          <button class="dlabel" id="dayLabel" aria-label="Pick a date">Today ▾</button>
+          <button class="arrow" id="dayNext" aria-label="Next day">›</button>
+        </div>
+        <button class="today-btn" id="dayToday">Today</button>
+        <button class="viewtog" id="sortTog" aria-label="จัดลำดับเอง" title="ลากจัดลำดับเอง">↕</button>
+        <button class="viewtog" id="matrixTog" aria-label="Matrix view">⊞</button>
+      </div>
+      <div class="addrow">
+        <input id="taskInput" placeholder="Add a task…" maxlength="120" autocomplete="off">
+        <button class="iadd" id="taskAdd" aria-label="Add task">+</button>
+      </div>
+      <div class="quadpick" id="quadPick">
+        <button data-q="q1">🔴 สำคัญ+ด่วน</button>
+        <button data-q="q2" class="sel">🟢 สำคัญ</button>
+        <button data-q="q3">🟡 เร่งด่วน</button>
+        <button data-q="q4">⚪ ทีหลัง</button>
+      </div>
+      <div id="shiftArea"></div>
+      <div id="taskArea"></div>
+      <div class="eyebrow" id="thHd" hidden>นิสัยวันนี้ <span class="count" id="thCount"></span></div>
+      <div class="todayhabits" id="todayHabits"></div>
+    </section>
+
+    <!-- FOCUS -->
+    <section class="view" id="v-focus">
+      <div class="focuswrap">
+        <div class="ftarget" id="focusTargetBar" hidden></div>
+        <div class="mode-tabs" id="modeTabs">
+          <button data-m="focus" class="on">Focus</button>
+          <button data-m="short">Short break</button>
+          <button data-m="long">Long break</button>
+        </div>
+        <div class="ring" id="ring">
+          <svg viewBox="0 0 100 100"><circle class="bg" cx="50" cy="50" r="44"></circle>
+            <circle class="fg" id="ringFg" cx="50" cy="50" r="44" stroke-dasharray="276.46" stroke-dashoffset="0"></circle></svg>
+          <div class="inner"><div class="time" id="timeDisp">25:00</div><div class="lbl" id="timeLbl">Focus</div></div>
+        </div>
+        <div class="controls"><button class="bigbtn" id="startBtn">Start</button><button class="ghost" id="resetBtn" aria-label="Reset">↺</button></div>
+        <div class="stats">
+          <div class="stat"><div class="n" id="stSessions">0</div><div class="l">Sessions today</div></div>
+          <div class="stat b"><div class="n" id="stMin">0</div><div class="l">Minutes today</div></div>
+          <div class="stat c"><div class="n" id="stStreak">0</div><div class="l">Day streak</div></div>
+        </div>
+        <div class="setts">
+          <label>Focus <input type="number" id="setFocus" min="1" max="90" value="25"></label>
+          <label>Break <input type="number" id="setShort" min="1" max="30" value="5"></label>
+        </div>
+        <div class="fstats">
+          <div class="ttl">Focus minutes · last 7 days · <span id="weekTotal">0 min</span></div>
+          <div class="barchart" id="barChart"></div>
+        </div>
+        <div class="fstats" id="pfocusCard" hidden>
+          <div class="ttl">โฟกัสตามโปรเจกต์ · 7 วันล่าสุด</div>
+          <div id="pfocusList"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- HABITS -->
+    <section class="view" id="v-habits">
+      <div class="eyebrow">Habits · นิสัยที่กำลังสร้าง <button class="linkbtn" id="addHabit">＋ New</button></div>
+      <div class="habitlist" id="habitList"></div>
+      <div class="eyebrow" id="achHd" hidden>🏆 ความสำเร็จ · Achievements</div>
+      <div class="achlist" id="achList"></div>
+    </section>
+
+    <!-- MONEY -->
+    <section class="view" id="v-money">
+      <div class="mhead">
+        <div class="mnav"><button id="moPrev" aria-label="Prev month">‹</button><span class="mo" id="moLabel">—</span><button id="moNext" aria-label="Next month">›</button></div>
+        <div style="display:flex;gap:8px"><button class="linkbtn" id="moCfg">⚙ ตั้งค่า</button><button class="linkbtn" id="copySheet">Copy</button></div>
+      </div>
+      <div class="budgetcard" id="budgetCard"></div>
+      <div class="balcard">
+        <div class="bal-l">คงเหลือเดือนนี้ · Net this month</div>
+        <div class="bal" id="balNet">฿0</div>
+        <div class="io">
+          <div class="box in"><div class="k">รายรับ · Income</div><div class="v" id="ioIn">฿0</div></div>
+          <div class="box out"><div class="k">รายจ่าย · Expense</div><div class="v" id="ioOut">฿0</div></div>
+        </div>
+        <div class="addbtns">
+          <button class="out" id="addOut">− รายจ่าย</button>
+          <button class="in" id="addIn">+ รายรับ</button>
+          <button class="scb" id="slipBtn" aria-label="อัปโหลดสลิป">📷 สลิป</button>
+        </div>
+      </div>
+      <div class="eyebrow">Dashboard · ภาพรวมการใช้เงิน</div>
+      <div class="dashgrid" id="dashGrid"></div>
+      <div class="dashcard" id="trendCard">
+        <div class="dctl">รายจ่ายรายวัน · Daily spend (14 วันล่าสุด)</div>
+        <div class="barchart" id="spendChart"></div>
+      </div>
+      <div class="eyebrow">รายจ่ายตามหมวด · By category</div>
+      <div class="catbars" id="catBars"></div>
+      <div class="eyebrow">รายการล่าสุด · Transactions <span class="count" id="txCount"></span></div>
+      <ul class="txlist" id="txList"></ul>
+    </section>
+  </div>
+  <nav class="nav" id="nav">
+    <button data-v="today" class="on"><svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h10"/></svg>Today</button>
+    <button data-v="focus"><svg viewBox="0 0 24 24"><circle cx="12" cy="13" r="8"/><path d="M12 13V9M9 3h6"/></svg>Focus</button>
+    <button data-v="habits"><svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>Habits</button>
+    <button data-v="money"><svg viewBox="0 0 24 24"><path d="M3 7h18v12H3zM3 10h18M7 15h4"/></svg>Money</button>
+  </nav>
+</div>
+<div class="modal" id="modal"><div class="sheet" id="sheet"></div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+"use strict";
+const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
+const DAY=864e5;
+const store={get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},
+  set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}if(window.__sdOnChange){try{window.__sdOnChange()}catch(e){}}}};
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+const dk=d=>{const x=d||new Date();return `${x.getFullYear()}-${String(x.getMonth()+1).padStart(2,"0")}-${String(x.getDate()).padStart(2,"0")}`};
+const todayKey=()=>dk();
+const monthKey=s=>s.slice(0,7);
+
+/* IndexedDB for photos */
+let idb=null;
+(function(){try{const r=indexedDB.open("studydesk",1);
+  r.onupgradeneeded=()=>{if(!r.result.objectStoreNames.contains("photos"))r.result.createObjectStore("photos")};
+  r.onsuccess=()=>idb=r.result;}catch(e){}})();
+function putPhoto(id,data){try{idb&&idb.transaction("photos","readwrite").objectStore("photos").put(data,id)}catch(e){}}
+function getPhoto(id){return new Promise(res=>{try{if(!idb)return res(null);
+  const r=idb.transaction("photos").objectStore("photos").get(id);r.onsuccess=()=>res(r.result||null);r.onerror=()=>res(null)}catch(e){res(null)}})}
+function delPhoto(id){try{idb&&idb.transaction("photos","readwrite").objectStore("photos").delete(id)}catch(e){}}
+function compressImage(file,max=900,q=.72){return new Promise(res=>{const fr=new FileReader();
+  fr.onload=()=>{const img=new Image();img.onload=()=>{let w=img.width,h=img.height;
+    if(w>h&&w>max){h=Math.round(h*max/w);w=max}else if(h>max){w=Math.round(w*max/h);h=max}
+    const c=document.createElement("canvas");c.width=w;c.height=h;c.getContext("2d").drawImage(img,0,0,w,h);
+    res(c.toDataURL("image/jpeg",q))};img.onerror=()=>res(null);img.src=fr.result};fr.onerror=()=>res(null);fr.readAsDataURL(file)})}
+
+/* config */
+const QUADS={
+  q1:{nm:"สำคัญ & เร่งด่วน",short:"สำคัญ+ด่วน",c:"var(--rose)"},
+  q2:{nm:"สำคัญ ไม่เร่งด่วน",short:"สำคัญ",c:"var(--teal)"},
+  q3:{nm:"ไม่สำคัญ แต่เร่งด่วน",short:"เร่งด่วน",c:"var(--gold)"},
+  q4:{nm:"ไม่สำคัญ ไม่เร่งด่วน",short:"ทีหลัง",c:"var(--ink-3)"}};
+const OUT_CATS=[{id:"food",nm:"อาหาร",c:"#E0863C"},{id:"travel",nm:"เดินทาง",c:"#3F8FD6"},
+  {id:"shop",nm:"ช้อปปิ้ง",c:"#B65FC0"},{id:"bill",nm:"บิล/ค่าใช้จ่าย",c:"#C4453B"},
+  {id:"fun",nm:"บันเทิง",c:"#D9A521"},{id:"health",nm:"สุขภาพ",c:"#2E8B57"},
+  {id:"study",nm:"การเรียน",c:"#5B6BD6"},{id:"other",nm:"อื่นๆ",c:"#8A93A6"}];
+const IN_CATS=[{id:"salary",nm:"เงินเดือน",c:"#2E8B57"},{id:"transfer",nm:"โอนเข้า",c:"#12897E"},
+  {id:"allow",nm:"เงินให้",c:"#3F8FD6"},{id:"other_in",nm:"อื่นๆ",c:"#8A93A6"}];
+const catOf=id=>[...OUT_CATS,...IN_CATS].find(c=>c.id===id)||{nm:id,c:"#8A93A6"};
+const PROJ_COLORS=["#3F6FD6","#B65FC0","#E0863C","#2E8B57","#C4453B","#12897E","#D9A521"];
+
+/* seed */
+function seed(){if(store.get("sd_init3"))return;
+  const t=new Date(),plus=n=>dk(new Date(t.getTime()+n*DAY));
+  if(!store.get("sd_exams"))store.set("sd_exams",[{id:uid(),name:"Anatomy midterm",date:plus(9)},{id:uid(),name:"Pharmacology quiz",date:plus(16)}]);
+  if(!store.get("sd_projects"))store.set("sd_projects",[
+    {id:"p1",name:"Cardiology block",color:PROJ_COLORS[0],subtasks:[{id:uid(),t:"อ่าน ECG basics",done:false},{id:uid(),t:"ทำ flashcard ยา",done:false},{id:uid(),t:"ทบทวน murmur",done:false}]},
+    {id:"p2",name:"Research paper",color:PROJ_COLORS[1],subtasks:[{id:uid(),t:"หา references 10 ชิ้น",done:false},{id:uid(),t:"เขียน methods",done:false}]}]);
+  if(!store.get("sd_tasks"))store.set("sd_tasks",[
+    {id:uid(),t:"Review ECG interpretation",quad:"q1",due:plus(0),done:false,proj:"p1",notes:"Focus on arrhythmias",place:"Library 3F"},
+    {id:uid(),t:"Draft methods section",quad:"q2",due:plus(2),done:false,proj:"p2",notes:"",place:""},
+    {id:uid(),t:"Email lab about samples",quad:"q3",due:plus(0),done:false,proj:"",notes:"",place:""}]);
+  if(!store.get("sd_habits"))store.set("sd_habits",[
+    {id:uid(),name:"อ่านหนังสือ 30 นาที",color:PROJ_COLORS[3],log:{},goal:30,finished:false},
+    {id:uid(),name:"ออกกำลังกาย",color:PROJ_COLORS[2],log:{},goal:21,finished:false},
+    {id:uid(),name:"นอนก่อน 5 ทุ่ม",color:PROJ_COLORS[0],log:{},goal:66,finished:false}]);
+  if(!store.get("sd_tx"))store.set("sd_tx",[
+    {id:uid(),type:"in",amount:9000,cat:"allow",note:"ค่าขนม",date:todayKey()},
+    {id:uid(),type:"out",amount:65,cat:"food",note:"ข้าวเที่ยง",date:todayKey()},
+    {id:uid(),type:"out",amount:40,cat:"travel",note:"BTS",date:todayKey()}]);
+  store.set("sd_init3",1);}
+seed();
+
+let exams=store.get("sd_exams",[]),tasks=store.get("sd_tasks",[]),projects=store.get("sd_projects",[]),
+    habits=store.get("sd_habits",[]),txs=store.get("sd_tx",[]);
+let curQuad="q2",projFilter="",selDay=todayKey(),matrixMode=false,curMonth=monthKey(todayKey());
+let manualSort=store.get("sd_manualsort",false);
+let shifts=store.get("sd_shifts",[]);
+const saveExams=()=>store.set("sd_exams",exams),saveTasks=()=>store.set("sd_tasks",tasks),
+  saveProjects=()=>store.set("sd_projects",projects),saveHabits=()=>store.set("sd_habits",habits),saveTx=()=>store.set("sd_tx",txs),
+  saveShifts=()=>store.set("sd_shifts",shifts);
+const SHIFT_TYPES=[{id:"morning",nm:"เวรเช้า",c:"#E8A33D"},{id:"afternoon",nm:"เวรบ่าย",c:"#3F8FD6"},
+  {id:"night",nm:"เวรดึก",c:"#5B4FC0"},{id:"oncall",nm:"อยู่เวร (on-call)",c:"#C4453B"},
+  {id:"opd",nm:"OPD",c:"#12897E"},{id:"or",nm:"OR/ห้องผ่าตัด",c:"#B65FC0"},{id:"off",nm:"หยุด",c:"#8A93A6"}];
+const shiftType=id=>SHIFT_TYPES.find(s=>s.id===id)||{nm:id,c:"#8A93A6"};
+
+/* migrate old project.subtasks -> real tasks (unified model) */
+if(!store.get("sd_mig_sub")){let changed=false;
+  projects.forEach(p=>{if(p.subtasks&&p.subtasks.length){p.subtasks.forEach((s,i)=>{
+    if(!tasks.some(t=>t.subId===s.id))tasks.push({id:uid(),t:s.t,quad:"q2",due:s.date||"",done:!!s.done,proj:p.id,notes:"",place:"",order:i})});
+    delete p.subtasks;changed=true}});
+  tasks.forEach(t=>{if(t.subId!==undefined)delete t.subId});
+  if(changed){saveTasks();saveProjects()}store.set("sd_mig_sub",1)}
+
+/* reusable drag-to-reorder (pointer events; works on touch) */
+function makeSortable(container,itemSel,handleSel,onReorder){
+  container.querySelectorAll(handleSel).forEach(handle=>{handle.style.touchAction="none";
+    handle.onpointerdown=e=>{e.preventDefault();const item=handle.closest(itemSel);if(!item)return;
+      item.classList.add("dragging");
+      const move=ev=>{const others=[...container.querySelectorAll(itemSel)].filter(x=>x!==item);let after=null;
+        for(const it of others){const r=it.getBoundingClientRect();if(ev.clientY<r.top+r.height/2){after=it;break}}
+        if(after)container.insertBefore(item,after);else container.appendChild(item)};
+      const up=()=>{item.classList.remove("dragging");document.removeEventListener("pointermove",move);document.removeEventListener("pointerup",up);
+        onReorder([...container.querySelectorAll(itemSel)].map(x=>x.dataset.id))};
+      document.addEventListener("pointermove",move);document.addEventListener("pointerup",up)}})}
+
+/* header + theme + nav */
+(function(){const h=new Date().getHours();
+  const g=h<5?"Still up":h<12?"Good morning":h<17?"Good afternoon":h<22?"Good evening":"Late night";
+  $("#hello").innerHTML=`${g}, <em>let's focus.</em>`;
+  $("#datebar").textContent=new Date().toLocaleDateString(undefined,{weekday:"long",month:"long",day:"numeric"})})();
+(function(){const s=store.get("sd_theme");if(s)document.documentElement.setAttribute("data-theme",s);
+  $("#theme").onclick=()=>{const cur=document.documentElement.getAttribute("data-theme");
+    const isDark=cur?cur==="dark":matchMedia("(prefers-color-scheme:dark)").matches;const next=isDark?"light":"dark";
+    document.documentElement.setAttribute("data-theme",next);store.set("sd_theme",next)}})();
+$$("#nav button").forEach(b=>b.onclick=()=>{$$("#nav button").forEach(x=>x.classList.remove("on"));b.classList.add("on");
+  $$(".view").forEach(v=>v.classList.remove("on"));$("#v-"+b.dataset.v).classList.add("on");$(".scroll").scrollTop=0;
+  if(b.dataset.v==="today")renderTasks();if(b.dataset.v==="focus"){renderBars();renderFocusTarget();renderPFocus()}if(b.dataset.v==="habits")renderHabits()});
+
+function gcal(title,dateStr,details){const d=dateStr.replace(/-/g,"");
+  const end=dk(new Date(new Date(dateStr+"T00:00").getTime()+DAY)).replace(/-/g,"");
+  return "https://calendar.google.com/calendar/render?"+new URLSearchParams({action:"TEMPLATE",text:title,dates:`${d}/${end}`,details:details||"StudyDesk"}).toString()}
+function taskCalUrl(t){if(!t.due)return"#";
+  const proj=t.proj?projects.find(p=>p.id===t.proj):null;
+  const details=[t.notes,proj?("โปรเจกต์ · "+proj.name):"","— StudyDesk"].filter(Boolean).join("\n");
+  const p=new URLSearchParams({action:"TEMPLATE",text:t.t,details});
+  if(t.place)p.set("location",t.place);
+  if(t.time){const[Y,M,D]=t.due.split("-").map(Number),[hh,mm]=t.time.split(":").map(Number);
+    const start=new Date(Y,M-1,D,hh,mm),end=new Date(start.getTime()+3600000);
+    const fmt=x=>`${x.getFullYear()}${String(x.getMonth()+1).padStart(2,"0")}${String(x.getDate()).padStart(2,"0")}T${String(x.getHours()).padStart(2,"0")}${String(x.getMinutes()).padStart(2,"0")}00`;
+    p.set("dates",`${fmt(start)}/${fmt(end)}`);
+    try{p.set("ctz",Intl.DateTimeFormat().resolvedOptions().timeZone)}catch(e){}}
+  else{const d=t.due.replace(/-/g,""),end=dk(new Date(new Date(t.due+"T00:00").getTime()+DAY)).replace(/-/g,"");p.set("dates",`${d}/${end}`)}
+  return "https://calendar.google.com/calendar/render?"+p.toString()}
+
+/* ===== EXAMS ===== */
+function renderExams(){const strip=$("#examStrip");const now=new Date();now.setHours(0,0,0,0);
+  exams.sort((a,b)=>a.date.localeCompare(b.date));strip.innerHTML="";
+  exams.forEach(e=>{const d=Math.round((new Date(e.date+"T00:00")-now)/DAY);const cls=d<=3?"soon":d<=10?"warn":"";
+    const el=document.createElement("div");el.className="exam "+cls;
+    el.innerHTML=`<button class="x" aria-label="Remove">✕</button><div class="d">${d<0?"—":d}<small>${d===1?"day":"days"}</small></div>
+      <div class="nm">${esc(e.name)}</div><div class="dt">${new Date(e.date+"T00:00").toLocaleDateString(undefined,{month:"short",day:"numeric"})}
+      <a class="cal" href="${gcal(e.name,e.date,"Exam")}" target="_blank" rel="noopener">＋cal</a></div>`;
+    el.querySelector(".x").onclick=()=>{exams=exams.filter(x=>x.id!==e.id);saveExams();renderExams()};strip.appendChild(el)});
+  const add=document.createElement("button");add.className="exam-add";add.textContent="+";add.setAttribute("aria-label","Add exam");add.onclick=examModal;strip.appendChild(add)}
+function examModal(){openSheet(`<h3>Add an exam or deadline</h3><input id="mName" placeholder="e.g. Physiology final" maxlength="60">
+  <input type="date" id="mDate" value="${todayKey()}"><div class="row2"><button class="cancel" id="mCancel">Cancel</button><button class="save" id="mSave">Add</button></div>`);
+  $("#mName").focus();$("#mCancel").onclick=closeSheet;$("#mSave").onclick=()=>{const name=$("#mName").value.trim(),date=$("#mDate").value;
+    if(!name||!date)return;exams.push({id:uid(),name,date});saveExams();renderExams();closeSheet()}}
+
+/* ===== PROJECTS ===== */
+function renderProjChips(){const c=$("#projChips");c.innerHTML="";
+  const all=document.createElement("button");all.className="chip"+(projFilter===""?" on":"");all.textContent="ทั้งหมด";
+  all.onclick=()=>{projFilter="";renderProjChips();renderTasks()};c.appendChild(all);
+  projects.forEach(p=>{const active=projFilter===p.id;const b=document.createElement("button");b.className="chip"+(active?" on":"");
+    const nSub=tasks.filter(t=>t.proj===p.id&&!t.done).length;
+    b.innerHTML=`<span class="cd" style="background:${p.color}"></span>${esc(p.name)}${nSub?`<span class="cbadge">${nSub}</span>`:""}`+(active?`<span class="cx edit" aria-label="Subtasks">☰</span><span class="cx" aria-label="Delete project">✕</span>`:"");
+    b.onclick=e=>{if(e.target.classList.contains("edit")){e.stopPropagation();projectSheet(p);return}
+      if(e.target.classList.contains("cx")){e.stopPropagation();
+        confirmSheet(`ลบโปรเจกต์ "${p.name}"? งานจะยังอยู่ แต่จะไม่ผูกกับโปรเจกต์นี้`,()=>{projects=projects.filter(x=>x.id!==p.id);
+          tasks.forEach(t=>{if(t.proj===p.id)t.proj=""});saveProjects();saveTasks();projFilter="";renderProjChips();renderTasks()});return}
+      projFilter=active?"":p.id;renderProjChips();renderTasks()};
+    c.appendChild(b)});
+  const add=document.createElement("button");add.className="chip add";add.textContent="＋ Project";add.onclick=projModal;c.appendChild(add)}
+function projModal(){openSheet(`<h3>New project</h3><input id="mName" placeholder="e.g. Cardiology block" maxlength="40">
+  <div class="hintline">วิธีลบ: แตะเลือกโปรเจกต์ แล้วกดปุ่ม ✕ ที่ขึ้นบนชิป</div>
+  <div class="row2"><button class="cancel" id="mCancel">Cancel</button><button class="save" id="mSave">Create</button></div>`);
+  $("#mName").focus();$("#mCancel").onclick=closeSheet;$("#mSave").onclick=()=>{const n=$("#mName").value.trim();if(!n)return;
+    projects.push({id:uid(),name:n,color:PROJ_COLORS[projects.length%PROJ_COLORS.length],subtasks:[]});saveProjects();closeSheet();renderProjChips()}}
+const QCYCLE=["q1","q2","q3","q4"];
+function projectSheet(p){
+  openSheet(`<h3>${esc(p.name)}</h3>
+    <div class="hintline">งานย่อยทั้งหมดของโปรเจกต์นี้ · ตั้งวัน + แตะป้ายสีเพื่อปรับความเร่งด่วน · งานที่ยังไม่ใส่วัน = ค้างไว้ที่นี่ (ยังไม่ขึ้น Today) · ลากปุ่ม ⠿ เพื่อเรียงลำดับ</div>
+    <div id="psList" class="sublist"></div>
+    <div class="addrow" style="margin:12px 0 0"><input id="psInput" placeholder="เพิ่มงานย่อย…" maxlength="80" autocomplete="off"><button class="iadd" id="psAdd" aria-label="Add">+</button></div>
+    <div class="row2" style="margin-top:14px"><button class="cancel" id="mCancel">ปิด</button><button class="save" id="psFilter">กรองดูใน Today</button></div>`);
+  const render=()=>{const box=$("#psList");box.innerHTML="";
+    const list=tasks.filter(t=>t.proj===p.id).sort((a,b)=>(a.order||0)-(b.order||0));
+    if(!list.length){box.innerHTML=`<div class="hintline" style="text-align:center;padding:8px">ยังไม่มีงานย่อย</div>`}
+    list.forEach(t=>{const card=document.createElement("div");card.className="subcard"+(t.done?" done":"");card.dataset.id=t.id;
+      card.innerHTML=`<div class="subtop"><button class="subgrip" aria-label="ลากเพื่อเรียง">⠿</button>
+          <input class="subtxt" value="${esc(t.t)}" maxlength="80"><button class="subdel" aria-label="Delete">✕</button></div>
+        <div class="subbot"><button class="qflag q-${t.quad}">${QUADS[t.quad].short}</button>
+          <input type="date" class="subdate" value="${t.due||""}" aria-label="วันกำหนด">
+          <label class="subdone"><input type="checkbox" ${t.done?"checked":""}>เสร็จ</label></div>`;
+      card.querySelector(".subtxt").onchange=e=>{t.t=e.target.value.trim()||t.t;saveTasks();renderTasks()};
+      card.querySelector(".qflag").onclick=e=>{t.quad=QCYCLE[(QCYCLE.indexOf(t.quad)+1)%4];saveTasks();renderTasks();
+        e.target.className="qflag q-"+t.quad;e.target.textContent=QUADS[t.quad].short};
+      card.querySelector(".subdate").onchange=e=>{t.due=e.target.value;saveTasks();renderTasks()};
+      card.querySelector(".subdone input").onchange=e=>{t.done=e.target.checked;saveTasks();renderTasks();card.classList.toggle("done",t.done)};
+      card.querySelector(".subdel").onclick=()=>{tasks=tasks.filter(x=>x.id!==t.id);saveTasks();render();renderProjChips();renderTasks()};
+      box.appendChild(card)});
+    makeSortable(box,".subcard",".subgrip",ids=>{ids.forEach((id,i)=>{const t=tasks.find(x=>x.id===id);if(t)t.order=i});saveTasks()})};
+  render();
+  const add=()=>{const v=$("#psInput").value.trim();if(!v)return;
+    const maxo=Math.max(0,...tasks.filter(t=>t.proj===p.id).map(t=>t.order||0));
+    tasks.push({id:uid(),t:v,quad:"q2",due:"",done:false,proj:p.id,notes:"",place:"",order:maxo+1});
+    saveTasks();$("#psInput").value="";render();renderProjChips();renderTasks();$("#psInput").focus()};
+  $("#psAdd").onclick=add;$("#psInput").addEventListener("keydown",e=>{if(e.key==="Enter")add()});
+  $("#mCancel").onclick=closeSheet;
+  $("#psFilter").onclick=()=>{projFilter=p.id;closeSheet();renderProjChips();renderTasks();$$("#nav button").forEach(x=>x.classList.remove("on"));$('#nav button[data-v="today"]').classList.add("on");$$(".view").forEach(v=>v.classList.remove("on"));$("#v-today").classList.add("on")}}
+
+/* ===== TASKS ===== */
+$("#quadPick").onclick=e=>{const b=e.target.closest("button");if(!b)return;
+  $$("#quadPick button").forEach(x=>x.classList.remove("sel"));b.classList.add("sel");curQuad=b.dataset.q};
+function addTask(){const inp=$("#taskInput"),t=inp.value.trim();if(!t)return;
+  tasks.unshift({id:uid(),t,quad:curQuad,due:selDay,done:false,proj:projFilter||"",notes:"",place:""});
+  saveTasks();inp.value="";renderTasks();inp.focus()}
+$("#taskAdd").onclick=addTask;$("#taskInput").addEventListener("keydown",e=>{if(e.key==="Enter")addTask()});
+function stepDay(n){selDay=dk(new Date(new Date(selDay+"T00:00").getTime()+n*DAY));renderDayLabel();renderTasks()}
+$("#dayPrev").onclick=()=>stepDay(-1);$("#dayNext").onclick=()=>stepDay(1);
+$("#dayToday").onclick=()=>{selDay=todayKey();renderDayLabel();renderTasks()};
+$("#matrixTog").onclick=()=>{matrixMode=!matrixMode;$("#matrixTog").classList.toggle("on",matrixMode);renderTasks()};
+$("#sortTog").onclick=()=>{manualSort=!manualSort;store.set("sd_manualsort",manualSort);$("#sortTog").classList.toggle("on",manualSort);
+  if(manualSort&&matrixMode){matrixMode=false;$("#matrixTog").classList.remove("on")}
+  toast(manualSort?"โหมดจัดลำดับเอง — ลาก ⠿ เพื่อเรียง":"เรียงตามความสำคัญอัตโนมัติ");renderTasks()};
+
+/* ===== ROTATION / SHIFTS ===== */
+function renderShift(){const area=$("#shiftArea");const today=shifts.filter(s=>s.date===selDay);
+  const dtxt=selDay===todayKey()?"วันนี้":new Date(selDay+"T00:00").toLocaleDateString(undefined,{day:"numeric",month:"short"});
+  let html=`<div class="eyebrow">ตารางเวร · ${dtxt} <button class="linkbtn" id="addShift">＋ เพิ่มเวร</button></div>`;
+  if(today.length){html+=`<div class="shiftrow">`+today.map(s=>{const st=shiftType(s.type);
+    return `<div class="shiftpill" data-id="${s.id}" style="border-color:${st.c}"><span class="sdot" style="background:${st.c}"></span>
+      <span class="sinfo"><b>${esc(st.nm)}</b>${s.ward?` · ${esc(s.ward)}`:""}${s.time?` · ${esc(s.time)}`:""}</span>
+      <a class="scal" href="${gcal("เวร: "+st.nm+(s.ward?" @"+s.ward:""),s.date,s.note||"")}" target="_blank" rel="noopener">📅</a></div>`}).join("")+`</div>`;}
+  else html+=`<div class="shiftempty" id="shiftEmpty">ยังไม่มีเวรวันนี้ — แตะ "＋ เพิ่มเวร"</div>`;
+  area.innerHTML=html;
+  $("#addShift").onclick=()=>shiftModal(null,selDay);
+  $$("#shiftArea .shiftpill").forEach(el=>{const s=shifts.find(x=>x.id===el.dataset.id);
+    el.querySelector(".sinfo").onclick=()=>shiftModal(s)})}
+function shiftModal(s,date){const edit=!!s;s=s||{};
+  openSheet(`<h3>${edit?"แก้ไขเวร":"เพิ่มเวร"}</h3>
+    <label class="fl">วันที่</label><input type="date" id="shDate" value="${s.date||date||todayKey()}">
+    <label class="fl">ประเภทเวร</label><div class="catpick" id="shType"></div>
+    <label class="fl">วอร์ด/สถานที่ (ไม่บังคับ)</label><input id="shWard" value="${esc(s.ward||"")}" placeholder="เช่น Med ward 5, ER" maxlength="40">
+    <label class="fl">เวลา (ไม่บังคับ)</label><input id="shTime" value="${esc(s.time||"")}" placeholder="เช่น 08:00–16:00" maxlength="20">
+    <label class="fl">บันทึก (ไม่บังคับ)</label><input id="shNote" value="${esc(s.note||"")}" maxlength="60">
+    <div class="row2"><button class="cancel" id="mCancel">${edit?"ลบ":"Cancel"}</button><button class="save" id="mSave">บันทึก</button></div>`);
+  let selT=s.type||SHIFT_TYPES[0].id;const tp=$("#shType");
+  SHIFT_TYPES.forEach(st=>{const b=document.createElement("button");b.textContent=st.nm;if(st.id===selT){b.classList.add("sel");b.style.background=st.c}
+    b.onclick=()=>{selT=st.id;$$("#shType button").forEach(x=>{x.classList.remove("sel");x.style.background=""});b.classList.add("sel");b.style.background=st.c};tp.appendChild(b)});
+  $("#mCancel").onclick=edit?()=>{closeSheet();confirmSheet("ลบเวรนี้?",()=>{shifts=shifts.filter(x=>x.id!==s.id);saveShifts();renderShift()})}:closeSheet;
+  $("#mSave").onclick=()=>{const date2=$("#shDate").value||todayKey();const o={type:selT,ward:$("#shWard").value.trim(),time:$("#shTime").value.trim(),note:$("#shNote").value.trim(),date:date2};
+    if(edit)Object.assign(s,o);else shifts.push({id:uid(),...o});saveShifts();closeSheet();selDay=date2;renderDayLabel();renderTasks()}}
+
+/* ===== HABITS ON TODAY ===== */
+function renderTodayHabits(){const box=$("#todayHabits"),hd=$("#thHd");const active=habits.filter(h=>!h.finished);
+  if(!active.length){box.innerHTML="";hd.hidden=true;return}
+  hd.hidden=false;const future=selDay>todayKey();let done=0;
+  box.innerHTML="";active.forEach(h=>{const on=!!h.log[selDay];if(on)done++;
+    const el=document.createElement("button");el.className="thchip"+(on?" on":"")+(future?" future":"");
+    el.style.cssText=on?`background:${h.color};border-color:${h.color}`:"";el.disabled=future;
+    el.innerHTML=`<span class="thmark">${on?"✓":"○"}</span>${esc(h.name)}`;
+    el.onclick=()=>{if(future)return;if(h.log[selDay])delete h.log[selDay];else h.log[selDay]=true;saveHabits();renderTodayHabits()};
+    box.appendChild(el)});
+  $("#thCount").textContent=`${done}/${active.length}`}
+function renderDayLabel(){const diff=Math.round((new Date(selDay+"T00:00")-new Date(todayKey()+"T00:00"))/DAY);
+  const t=diff===0?"Today":diff===1?"Tomorrow":diff===-1?"Yesterday":
+    new Date(selDay+"T00:00").toLocaleDateString(undefined,{weekday:"short",day:"numeric",month:"short"});
+  $("#dayLabel").textContent=t+" ▾"}
+$("#dayLabel").onclick=()=>openDatePicker();
+function openDatePicker(){let pm=selDay.slice(0,7);
+  openSheet(`<h3>เลือกวันที่</h3><div class="calwrap"><div class="calhd"><button id="cPrev" aria-label="Prev">‹</button>
+    <span class="cmo" id="cMo"></span><button id="cNext" aria-label="Next">›</button></div>
+    <div class="caldow"><span>Mo</span><span>Tu</span><span>We</span><span>Th</span><span>Fr</span><span>Sa</span><span>Su</span></div>
+    <div class="calgrid" id="cGrid"></div></div>
+    <div class="row2" style="margin-top:14px"><button class="cancel" id="cToday">ไปวันนี้</button><button class="save" id="cClose">เสร็จ</button></div>`);
+  const draw=()=>{const[y,m]=pm.split("-").map(Number);$("#cMo").textContent=new Date(y,m-1,1).toLocaleDateString(undefined,{month:"long",year:"numeric"});
+    const first=new Date(y,m-1,1);const lead=(first.getDay()+6)%7;const days=new Date(y,m,0).getDate();
+    const withTask=new Set(tasks.filter(t=>t.due&&projMatch(t)).map(t=>t.due));
+    const g=$("#cGrid");g.innerHTML="";
+    for(let i=0;i<lead;i++){const b=document.createElement("button");b.className="blank";b.disabled=true;g.appendChild(b)}
+    for(let d=1;d<=days;d++){const key=`${y}-${String(m).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
+      const b=document.createElement("button");b.textContent=d;
+      if(key===todayKey())b.classList.add("today");if(key===selDay)b.classList.add("sel");
+      if(withTask.has(key))b.innerHTML+=`<span class="tdot2"></span>`;
+      b.onclick=()=>{selDay=key;renderDayLabel();renderTasks();closeSheet()};g.appendChild(b)}};
+  draw();
+  $("#cPrev").onclick=()=>{const[y,m]=pm.split("-").map(Number);const d=new Date(y,m-2,1);pm=d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0");draw()};
+  $("#cNext").onclick=()=>{const[y,m]=pm.split("-").map(Number);const d=new Date(y,m,1);pm=d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0");draw()};
+  $("#cToday").onclick=()=>{selDay=todayKey();renderDayLabel();renderTasks();closeSheet()};
+  $("#cClose").onclick=closeSheet}
+function projMatch(t){return !projFilter||t.proj===projFilter}
+function taskLine(t,drag){const li=document.createElement("li");li.className="task "+t.quad+(t.done?" done":"");li.dataset.id=t.id;
+  const now=new Date(todayKey()+"T00:00");let meta="",cal="";
+  if(t.due){const d=Math.round((new Date(t.due+"T00:00")-now)/DAY);const over=d<0&&!t.done;
+    if(over)meta+=`<span class="pill over">${-d}d overdue</span>`;
+    if(t.time)meta+=`<span class="pill place">🕐 ${esc(t.time)}</span>`;
+    cal=`<a class="cal" href="${taskCalUrl(t)}" target="_blank" rel="noopener" title="Add to Google Calendar">📅</a>`}
+  if(t.proj){const p=projects.find(x=>x.id===t.proj);if(p)meta+=`<span class="pill proj">${esc(p.name)}</span>`}
+  if(t.place)meta+=`<span class="pill place">📍 ${esc(t.place)}</span>`;
+  if(t.notes)meta+=`<span class="mini-ic">📝</span>`;
+  li.innerHTML=`${drag?`<button class="tgrip" aria-label="ลากเพื่อเรียง">⠿</button>`:""}<button class="chk" aria-label="Done"><svg viewBox="0 0 24 24"><path d="M4 12l5 5L20 6"/></svg></button>
+    <div class="body"><div class="t">${esc(t.t)}</div>${meta?`<div class="meta">${meta}</div>`:""}</div>
+    <img class="thumb" alt="" hidden>${t.done?"":`<button class="focusbtn" aria-label="โฟกัสงานนี้" title="เริ่มจับเวลากับงานนี้">▶</button>`}${cal}`;
+  li.querySelector(".chk").onclick=e=>{e.stopPropagation();t.done=!t.done;saveTasks();renderTasks()};
+  const fb=li.querySelector(".focusbtn");if(fb)fb.onclick=e=>{e.stopPropagation();setFocusTarget(t)};
+  li.querySelector(".body").onclick=()=>taskDetail(t);
+  if(t.photo){const im=li.querySelector(".thumb");getPhoto(t.id).then(d=>{if(d){im.src=d;im.hidden=false}})}
+  return li}
+function renderTasks(){renderShift();const area=$("#taskArea");area.innerHTML="";
+  if(matrixMode){renderMatrix(area);renderTodayHabits();return}
+  const list=tasks.filter(projMatch);
+  const dayT=list.filter(t=>t.due===selDay);
+  const overdue=selDay===todayKey()?list.filter(t=>t.due&&t.due<todayKey()&&!t.done):[];
+  const anytime=list.filter(t=>!t.due&&(!t.proj||projFilter));
+  const qorder={q1:0,q2:1,q3:2,q4:3};
+  const sortQ=a=>a.sort((x,y)=>(x.done-y.done)||(qorder[x.quad]-qorder[y.quad]));
+  const sortM=a=>a.sort((x,y)=>(x.done-y.done)||((x.order||0)-(y.order||0)));
+  const section=(title,arr,bar,drag)=>{if(!arr.length)return;
+    const h=document.createElement("div");h.className="grouphd";
+    h.innerHTML=(bar?`<span class="qbar" style="background:${bar}"></span>`:"")+title;area.appendChild(h);
+    const ul=document.createElement("ul");ul.className="tasklist";
+    const canDrag=drag&&manualSort;(canDrag?sortM(arr):sortQ(arr)).forEach(t=>ul.appendChild(taskLine(t,canDrag)));area.appendChild(ul);
+    if(canDrag)makeSortable(ul,".task",".tgrip",ids=>{ids.forEach((id,i)=>{const tt=tasks.find(x=>x.id===id);if(tt)tt.order=i});saveTasks()})};
+  if(overdue.length)section(`⚠️ Overdue`,overdue,"var(--rose)");
+  const dayTitle=(selDay===todayKey()?"Today":new Date(selDay+"T00:00").toLocaleDateString(undefined,{weekday:"long",day:"numeric",month:"short"}))+(manualSort?" · จัดเอง ↕":"");
+  if(dayT.length)section(dayTitle,dayT,"",true);
+  else{const e=document.createElement("div");e.className="empty";e.innerHTML=`<div class="big">✎</div>ไม่มีงานวันนี้ — เพิ่มด้านบน`;area.appendChild(e)}
+  if(anytime.length)section("Anytime · ไม่มีกำหนด",anytime,"var(--ink-3)");
+  renderTodayHabits()}
+function renderMatrix(area){const dtitle=selDay===todayKey()?"วันนี้":new Date(selDay+"T00:00").toLocaleDateString(undefined,{day:"numeric",month:"short"});
+  const hd=document.createElement("div");hd.className="grouphd";hd.textContent="ตารางความสำคัญ · "+dtitle;area.appendChild(hd);
+  const inc=tasks.filter(t=>projMatch(t)&&!t.done&&t.due===selDay);
+  const mk=q=>{const arr=inc.filter(t=>t.quad===q);const d=document.createElement("div");d.className="qcard "+q;
+    d.innerHTML=`<div class="qh">${QUADS[q].nm}</div>`;
+    if(!arr.length)d.innerHTML+=`<div class="qempty">—</div>`;
+    arr.slice(0,6).forEach(t=>{const row=document.createElement("div");row.className="qi";
+      row.innerHTML=`<button aria-label="Done">○</button><span>${esc(t.t)}</span>`;
+      row.querySelector("button").onclick=()=>{t.done=!t.done;saveTasks();renderTasks()};
+      row.querySelector("span").onclick=()=>taskDetail(t);d.appendChild(row)});
+    if(arr.length>6)d.innerHTML+=`<div class="qempty">+${arr.length-6} more</div>`;return d};
+  const r1=document.createElement("div");r1.className="matrixrow";r1.append(mk("q1"),mk("q3"));
+  const r2=document.createElement("div");r2.className="matrixrow";r2.append(mk("q2"),mk("q4"));
+  area.append(r1,r2)}
+function taskDetail(t){const projOpts=`<option value="">— ไม่มีโปรเจกต์ —</option>`+projects.map(p=>`<option value="${p.id}" ${t.proj===p.id?"selected":""}>${esc(p.name)}</option>`).join("");
+  openSheet(`<h3>รายละเอียดงาน</h3>
+    <label class="fl">งาน</label><input id="dT" value="${esc(t.t)}" maxlength="120">
+    <label class="fl">ระดับ (Eisenhower)</label>
+    <div class="catpick" id="dQuad">${Object.entries(QUADS).map(([k,v])=>`<button data-q="${k}" class="${t.quad===k?"sel":""}" style="${t.quad===k?`background:${v.c}`:""}">${v.short}</button>`).join("")}</div>
+    <label class="fl">โปรเจกต์</label><select id="dProj">${projOpts}</select>
+    <div class="row2"><div style="flex:1"><label class="fl">วันที่</label><input type="date" id="dDue" value="${t.due||""}"></div>
+      <div style="flex:1"><label class="fl">เวลา (ไม่บังคับ)</label><input type="time" id="dTime" value="${t.time||""}"></div></div>
+    <label class="fl">สถานที่ (จะขึ้นใน Google Calendar)</label><input id="dPlace" value="${esc(t.place||"")}" placeholder="เช่น Ward 5, Lecture hall" maxlength="60">
+    <label class="fl">รายละเอียด</label><textarea id="dNotes" placeholder="More detail…">${esc(t.notes||"")}</textarea>
+    <label class="fl">รูปภาพ</label>
+    <img class="dphoto" id="dImg" alt="" hidden>
+    <button class="photobtn" id="dPhotoBtn">📷 เพิ่ม/เปลี่ยนรูป</button>
+    <input type="file" id="dFile" accept="image/*" hidden>
+    <div class="row2"><button class="cancel" id="dDel">ลบงาน</button><button class="save" id="dSave">บันทึก</button></div>`);
+  let quadSel=t.quad,photoData=undefined;
+  $("#dQuad").onclick=e=>{const b=e.target.closest("button");if(!b)return;quadSel=b.dataset.q;
+    $$("#dQuad button").forEach(x=>{x.classList.remove("sel");x.style.background=""});b.classList.add("sel");b.style.background=QUADS[quadSel].c};
+  if(t.photo)getPhoto(t.id).then(d=>{if(d){$("#dImg").src=d;$("#dImg").hidden=false}});
+  $("#dPhotoBtn").onclick=()=>$("#dFile").click();
+  $("#dFile").onchange=async e=>{const f=e.target.files[0];if(!f)return;$("#dPhotoBtn").textContent="กำลังบีบอัด…";
+    const data=await compressImage(f);if(data){photoData=data;$("#dImg").src=data;$("#dImg").hidden=false}$("#dPhotoBtn").textContent="📷 เปลี่ยนรูป"};
+  $("#dDel").onclick=()=>confirmSheet("ลบงานนี้?",()=>{delPhoto(t.id);tasks=tasks.filter(x=>x.id!==t.id);saveTasks();renderTasks()});
+  $("#dSave").onclick=()=>{t.t=$("#dT").value.trim()||t.t;t.quad=quadSel;t.proj=$("#dProj").value;t.due=$("#dDue").value;t.time=$("#dTime").value;
+    t.place=$("#dPlace").value.trim();t.notes=$("#dNotes").value.trim();
+    if(photoData!==undefined){putPhoto(t.id,photoData);t.photo=true}saveTasks();closeSheet();renderTasks();toast("บันทึกแล้ว ✓")}}
+
+/* ===== POMODORO + STATS ===== */
+const P={mode:"focus",running:false,remain:1500,total:1500,timer:null,dur:store.get("sd_dur",{focus:25,short:5,long:15})};
+let fhist=store.get("sd_fhist",{});
+let focusTarget=null;                 // {taskId,projId,title}
+let pfocus=store.get("sd_pfocus",{}); // {projId:{dateKey:minutes}}
+function addProjFocus(proj,min){const k=proj||"__none";pfocus[k]=pfocus[k]||{};const d=todayKey();pfocus[k][d]=(pfocus[k][d]||0)+min;store.set("sd_pfocus",pfocus)}
+function projFocus7(proj){const o=pfocus[proj||"__none"]||{};let s=0;for(let i=0;i<7;i++)s+=o[dk(new Date(Date.now()-i*DAY))]||0;return s}
+function setFocusTarget(t){focusTarget={taskId:t.id,projId:t.proj||"",title:t.t};
+  $$("#nav button").forEach(x=>x.classList.remove("on"));$('#nav button[data-v="focus"]').classList.add("on");
+  $$(".view").forEach(v=>v.classList.remove("on"));$("#v-focus").classList.add("on");$(".scroll").scrollTop=0;
+  renderFocusTarget();renderBars();renderPFocus();
+  setMode("focus");startTimer()} // เริ่มจับเวลาให้เลย
+function clearFocusTarget(){focusTarget=null;renderFocusTarget()}
+function renderFocusTarget(){const bar=$("#focusTargetBar");if(!focusTarget){bar.hidden=true;return}
+  const p=projects.find(x=>x.id===focusTarget.projId);
+  bar.hidden=false;bar.innerHTML=`<span class="ftgt">🎯 <b>${esc(focusTarget.title)}</b>${p?` · <span style="color:${p.color}">${esc(p.name)}</span>`:""}</span>
+    <button class="ftend">จบเซสชัน</button><button class="ftclear" aria-label="ยกเลิก">✕</button>`;
+  bar.querySelector(".ftend").onclick=endSession;
+  bar.querySelector(".ftclear").onclick=clearFocusTarget}
+function endSession(){const elapsedMin=P.mode==="focus"?Math.max(0,Math.round((P.total-P.remain)/60)):0;
+  stopTimer();
+  if(elapsedMin>=1){const k=todayKey();fhist[k]=fhist[k]||{sessions:0,min:0};fhist[k].sessions++;fhist[k].min+=elapsedMin;
+    store.set("sd_fhist",fhist);if(focusTarget)addProjFocus(focusTarget.projId,elapsedMin);renderStats();renderBars();renderPFocus()}
+  const tId=focusTarget&&focusTarget.taskId,title=focusTarget?focusTarget.title:"";
+  clearFocusTarget();P.remain=P.total;setMode("focus");
+  const t=tId?tasks.find(x=>x.id===tId):null;
+  if(t&&!t.done){openSheet(`<h3>จบเซสชัน 🎯</h3>
+    <div class="hintline" style="font-size:.92rem;margin:2px 2px 14px">โฟกัสไป <b>${elapsedMin} นาที</b> กับ "${esc(title)}"<br>งานนี้เสร็จแล้วหรือยัง?</div>
+    <div class="row2"><button class="cancel" id="eNo">ยังไม่เสร็จ</button><button class="save" id="eYes" style="background:var(--teal)">เสร็จแล้ว ✓</button></div>`);
+    $("#eNo").onclick=closeSheet;$("#eYes").onclick=()=>{t.done=true;saveTasks();renderTasks();closeSheet();toast("เยี่ยม! ทำเครื่องหมายเสร็จแล้ว ✓")}}
+  else toast(elapsedMin>=1?`จบเซสชัน · โฟกัส ${elapsedMin} นาที ✓`:"จบเซสชันแล้ว")}
+function renderPFocus(){const card=$("#pfocusCard"),listEl=$("#pfocusList");
+  const rows=projects.map(p=>({name:p.name,color:p.color,min:projFocus7(p.id)})).filter(r=>r.min>0);
+  const none=projFocus7("");if(none>0)rows.push({name:"ไม่มีโปรเจกต์",color:"var(--ink-3)",min:none});
+  if(!rows.length){card.hidden=true;return}
+  card.hidden=false;rows.sort((a,b)=>b.min-a.min);const mx=rows[0].min;
+  listEl.innerHTML=rows.map(r=>`<div class="catrow"><span class="dot" style="background:${r.color}"></span>
+    <span class="nm">${esc(r.name)}</span><span class="track"><i style="width:${Math.max(6,r.min/mx*100)}%;background:${r.color}"></i></span>
+    <span class="amt">${r.min}m</span></div>`).join("")}
+function todayFocus(){return fhist[todayKey()]||{sessions:0,min:0}}
+function setMode(m){P.mode=m;stopTimer();P.total=P.dur[m]*60;P.remain=P.total;
+  $$("#modeTabs button").forEach(b=>b.classList.toggle("on",b.dataset.m===m));
+  $("#ring").classList.toggle("brk",m!=="focus");$("#timeLbl").textContent=m==="focus"?"Focus":m==="short"?"Short break":"Long break";paint()}
+$("#modeTabs").onclick=e=>{const b=e.target.closest("button");if(b)setMode(b.dataset.m)};
+function paint(){const mm=String(Math.floor(P.remain/60)).padStart(2,"0"),ss=String(P.remain%60).padStart(2,"0");
+  $("#timeDisp").textContent=`${mm}:${ss}`;$("#ringFg").style.strokeDashoffset=(276.46*(1-(P.total?P.remain/P.total:0))).toFixed(2);
+  $("#startBtn").textContent=P.running?"Pause":"Start";$("#startBtn").classList.toggle("run",P.running)}
+function tick(){P.remain--;if(P.remain<=0){finishSession();return}paint()}
+function finishSession(){stopTimer();
+  if(P.mode==="focus"){const k=todayKey();fhist[k]=fhist[k]||{sessions:0,min:0};fhist[k].sessions++;fhist[k].min+=P.dur.focus;
+    store.set("sd_fhist",fhist);if(focusTarget)addProjFocus(focusTarget.projId,P.dur.focus);renderStats();renderBars();renderPFocus()}
+  try{navigator.vibrate&&navigator.vibrate([120,60,120])}catch(e){}beep();P.remain=0;paint();
+  setMode(P.mode==="focus"?(todayFocus().sessions%4===0?"long":"short"):"focus")}
+function startTimer(){P.running=true;P.timer=setInterval(tick,1000);paint()}
+function stopTimer(){P.running=false;clearInterval(P.timer);P.timer=null;paint()}
+$("#startBtn").onclick=()=>{P.running?stopTimer():(P.remain<=0&&(P.remain=P.total),startTimer())};
+$("#resetBtn").onclick=()=>{stopTimer();P.remain=P.total;paint()};
+$("#setFocus").value=P.dur.focus;$("#setShort").value=P.dur.short;
+$("#setFocus").onchange=e=>{P.dur.focus=clamp(+e.target.value,1,90);store.set("sd_dur",P.dur);if(P.mode==="focus"&&!P.running)setMode("focus")};
+$("#setShort").onchange=e=>{P.dur.short=clamp(+e.target.value,1,30);store.set("sd_dur",P.dur);if(P.mode==="short"&&!P.running)setMode("short")};
+function focusStreak(){let s=0;for(let i=0;i<400;i++){const key=dk(new Date(Date.now()-i*DAY));
+  if(fhist[key]&&fhist[key].min>0)s++;else if(i===0)continue;else break}return s}
+function renderStats(){const tf=todayFocus();$("#stSessions").textContent=tf.sessions;$("#stMin").textContent=tf.min;$("#stStreak").textContent=focusStreak()}
+function renderBars(){const chart=$("#barChart");chart.innerHTML="";const days=[];let total=0;
+  for(let i=6;i>=0;i--){const d=new Date(Date.now()-i*DAY);const key=dk(d);const min=(fhist[key]||{}).min||0;total+=min;
+    days.push({key,min,lab:d.toLocaleDateString(undefined,{weekday:"short"}).slice(0,2),today:i===0})}
+  const max=Math.max(30,...days.map(d=>d.min));
+  days.forEach(d=>{const col=document.createElement("div");col.className="col";
+    col.innerHTML=`<div class="cval">${d.min||""}</div><div class="bar${d.today?" today":""}" style="height:${d.min/max*100}%"></div><div class="cd">${d.lab}</div>`;chart.appendChild(col)});
+  $("#weekTotal").textContent=total+" min"}
+function beep(){try{const a=new(window.AudioContext||window.webkitAudioContext)();const o=a.createOscillator(),g=a.createGain();
+  o.connect(g);g.connect(a.destination);o.frequency.value=660;o.type="sine";g.gain.setValueAtTime(.001,a.currentTime);
+  g.gain.exponentialRampToValueAtTime(.3,a.currentTime+.02);g.gain.exponentialRampToValueAtTime(.001,a.currentTime+.9);o.start();o.stop(a.currentTime+.9)}catch(e){}}
+
+/* ===== HABITS ===== */
+function habitStreak(h){let s=0;for(let i=0;i<800;i++){const key=dk(new Date(Date.now()-i*DAY));
+  if(h.log[key])s++;else if(i===0)continue;else break}return s}
+function habitBest(h){const keys=Object.keys(h.log).filter(k=>h.log[k]).sort();let best=0,cur=0,prev=null;
+  keys.forEach(k=>{if(prev&&(new Date(k+"T00:00")-new Date(prev+"T00:00"))===DAY)cur++;else cur=1;if(cur>best)best=cur;prev=k});return best}
+function habitMonthRate(h){const now=new Date(),y=now.getFullYear(),m=now.getMonth();const days=now.getDate();let done=0;
+  for(let d=1;d<=days;d++){const key=`${y}-${String(m+1).padStart(2,"0")}-${String(d).padStart(2,"0")}`;if(h.log[key])done++}
+  return{done,days,pct:Math.round(done/days*100)}}
+const HEAT_WEEKS=12;
+const habitTotal=h=>Object.keys(h.log).filter(k=>h.log[k]).length;
+function renderHabits(){const list=$("#habitList");list.innerHTML="";
+  const active=habits.filter(h=>!h.finished),finished=habits.filter(h=>h.finished);
+  if(!active.length){list.innerHTML=`<div class="empty"><div class="big">✓</div>ยังไม่มีนิสัยที่กำลังสร้าง — กด ＋ New</div>`}
+  const today=new Date(todayKey()+"T00:00");
+  const monThis=new Date(today.getTime()-(((today.getDay()+6)%7)*DAY));
+  const start=new Date(monThis.getTime()-(HEAT_WEEKS-1)*7*DAY);
+  const total=HEAT_WEEKS*7;
+  active.forEach(h=>{const el=document.createElement("div");el.className="habit";el.dataset.id=h.id;
+    const st=habitStreak(h),best=habitBest(h),tot=habitTotal(h),goal=h.goal||21;
+    const pct=Math.min(100,tot/goal*100),reached=tot>=goal,doneToday=!!h.log[todayKey()];
+    let cells="";for(let i=0;i<total;i++){const d=new Date(start.getTime()+i*DAY);const key=dk(d);
+      const done=!!h.log[key];const future=key>todayKey();const isToday=key===todayKey();
+      cells+=`<div class="hc${done?" done":""}${future?" future":""}${isToday?" today":""}" data-key="${key}" style="${done?`background:${h.color};border-color:${h.color}`:""}" title="${key}"></div>`}
+    el.innerHTML=`<div class="hrow"><span class="hdot" style="background:${h.color}"></span>
+      <span class="hnm" role="button">${esc(h.name)} ✎</span>
+      <button class="hgrip" aria-label="ลากเพื่อเรียง">⠿</button>
+      <button class="hdel" aria-label="Delete">✕</button></div>
+      <div class="goalrow"><div class="goaltrack"><i style="width:${pct}%;background:${h.color}"></i></div>
+        <span class="goalv">${tot}/${goal} วัน</span></div>
+      <div class="stats3">
+        <div class="s3"><b class="streak">🔥 ${st}</b><span>ต่อเนื่อง</span></div>
+        <div class="s3"><b>${best}</b><span>สถิติสูงสุด</span></div>
+        <div class="s3"><b>${habitMonthRate(h).pct}%</b><span>เดือนนี้</span></div>
+      </div>
+      ${reached?`<button class="finishbtn">🎉 ครบเป้า ${goal} วัน — เก็บเป็นความสำเร็จ</button>`:
+        `<button class="checkbtn${doneToday?" on":""}" style="${doneToday?`background:${h.color};border-color:${h.color}`:""}">${doneToday?"✓ ทำแล้ววันนี้":"เช็ควันนี้"}</button>`}
+      <div class="heat">${cells}</div>
+      <div class="hmleg">แตะช่องในตารางเพื่อทำเครื่องหมายย้อนหลัง</div>`;
+    el.querySelector(".checkbtn")&&(el.querySelector(".checkbtn").onclick=()=>{const k=todayKey();
+      if(h.log[k])delete h.log[k];else h.log[k]=true;saveHabits();renderHabits()});
+    el.querySelector(".finishbtn")&&(el.querySelector(".finishbtn").onclick=()=>{h.finished=true;h.finishedDate=todayKey();h.finishedDays=tot;saveHabits();renderHabits();toast("ยินดีด้วย! เก็บเป็นความสำเร็จแล้ว 🏆")});
+    el.querySelector(".hnm").onclick=()=>editHabit(h);
+    el.querySelectorAll(".heat .hc").forEach(c=>{if(c.classList.contains("future"))return;
+      c.onclick=()=>{const key=c.dataset.key;if(key>todayKey())return;if(h.log[key])delete h.log[key];else h.log[key]=true;saveHabits();renderHabits()}});
+    el.querySelector(".hdel").onclick=()=>confirmSheet(`ลบนิสัย "${h.name}"?`,()=>{habits=habits.filter(x=>x.id!==h.id);saveHabits();renderHabits()});
+    list.appendChild(el)});
+  makeSortable(list,".habit",".hgrip",ids=>{const fin=habits.filter(h=>h.finished);const map={};habits.forEach(h=>map[h.id]=h);
+    habits=[...ids.map(id=>map[id]).filter(Boolean),...fin];saveHabits()});
+  // achievements
+  const ach=$("#achList");ach.innerHTML="";$("#achHd").hidden=!finished.length;
+  finished.forEach(h=>{const el=document.createElement("div");el.className="achcard";
+    el.innerHTML=`<span class="atrophy" style="background:${h.color}">🏆</span>
+      <div class="ainfo"><div class="anm">${esc(h.name)}</div><div class="asub">ครบ ${h.finishedDays||h.goal||"?"} วัน · ${h.finishedDate||""}</div></div>
+      <button class="acont" aria-label="Continue">↺</button><button class="hdel" aria-label="Delete">✕</button>`;
+    el.querySelector(".acont").onclick=()=>{h.finished=false;saveHabits();renderHabits();editHabit(h);toast("กลับมาสร้างต่อ! 💪")};
+    el.querySelector(".hdel").onclick=()=>confirmSheet(`ลบ "${h.name}"?`,()=>{habits=habits.filter(x=>x.id!==h.id);saveHabits();renderHabits()});
+    ach.appendChild(el)})}
+function editHabit(h){openSheet(`<h3>แก้ไขนิสัย</h3>
+  <label class="fl">ชื่อ</label><input id="hN" value="${esc(h.name)}" maxlength="40">
+  <label class="fl">เป้าหมาย (จำนวนวันสะสม)</label><input id="hG" type="number" inputmode="numeric" value="${h.goal||21}">
+  <div class="hintline">งานวิจัยเรื่องการสร้างนิสัยมักใช้ราว 21–66 วัน</div>
+  <div class="row2"><button class="cancel" id="mCancel">Cancel</button><button class="save" id="mSave">บันทึก</button></div>`);
+  $("#mCancel").onclick=closeSheet;$("#mSave").onclick=()=>{h.name=$("#hN").value.trim()||h.name;h.goal=Math.max(1,parseInt($("#hG").value,10)||21);saveHabits();closeSheet();renderHabits()}}
+$("#addHabit").onclick=()=>{openSheet(`<h3>นิสัยใหม่ · New habit</h3>
+  <label class="fl">ชื่อ</label><input id="mName" placeholder="เช่น อ่านหนังสือ 30 นาที" maxlength="40">
+  <label class="fl">เป้าหมาย (จำนวนวันสะสม)</label><input id="mGoal" type="number" inputmode="numeric" value="21">
+  <div class="hintline">เมื่อทำครบเป้า จะเก็บเป็น 🏆 ความสำเร็จเพื่อเป็นแรงบันดาลใจ</div>
+  <div class="row2"><button class="cancel" id="mCancel">Cancel</button><button class="save" id="mSave">Add</button></div>`);
+  $("#mName").focus();$("#mCancel").onclick=closeSheet;$("#mSave").onclick=()=>{const n=$("#mName").value.trim();if(!n)return;
+    habits.push({id:uid(),name:n,color:PROJ_COLORS[habits.length%PROJ_COLORS.length],log:{},goal:Math.max(1,parseInt($("#mGoal").value,10)||21),finished:false});saveHabits();closeSheet();renderHabits()}};
+
+/* ===== MONEY ===== */
+const baht=n=>"฿"+Math.round(n).toLocaleString();
+let budget=store.get("sd_budget",0);
+let autosend=store.get("sd_autosend",false);
+const FORM={base:"https://docs.google.com/forms/d/e/1FAIpQLSdyXTbc_vVEeEvyRvBdTGXO1XOewrPp622xNTK8ixLPphdTFQ/viewform",
+  amount:"entry.912423403",type:"entry.681622332",cat:"entry.892310450",note:"entry.1657540660",date:"entry.311364491"};
+function formUrl(t){const p=new URLSearchParams();p.set("usp","pp_url");
+  p.set(FORM.amount,String(t.amount));p.set(FORM.type,t.type==="in"?"รายรับ":"รายจ่าย");
+  p.set(FORM.cat,catOf(t.cat).nm);p.set(FORM.note,t.note||"");p.set(FORM.date,t.date);
+  return FORM.base+"?"+p.toString()}
+function sendToSheet(t){openExternal(formUrl(t));t.synced=true;saveTx();renderMoney()}
+function shiftMonth(delta){const[y,m]=curMonth.split("-").map(Number);const d=new Date(y,m-1+delta,1);
+  curMonth=d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0");renderMoney()}
+$("#moPrev").onclick=()=>shiftMonth(-1);$("#moNext").onclick=()=>shiftMonth(1);
+function openMoneySettings(){openSheet(`<h3>ตั้งค่าการเงิน</h3>
+  <label class="fl">งบใช้จ่ายต่อวัน (บาท)</label>
+  <input class="amtin" id="bAmt" type="number" inputmode="decimal" placeholder="0" value="${budget||""}">
+  <div class="hintline">ตั้ง 0 เพื่อปิดการเตือนงบ</div>
+  <label class="fl">Google Sheet</label>
+  <label class="togrow"><span>เปิดฟอร์มอัตโนมัติหลังบันทึกรายการ<br><small>แตะ Submit ในฟอร์มเพื่อบันทึกลงชีต</small></span>
+    <input type="checkbox" id="cAuto" ${autosend?"checked":""}></label>
+  <button class="photobtn" id="cTest" style="margin-top:12px">🔗 เปิดฟอร์มทดสอบ</button>
+  <div class="row2"><button class="cancel" id="mCancel">ปิด</button><button class="save" id="bSave">บันทึก</button></div>`);
+  $("#cTest").onclick=()=>openExternal(FORM.base);
+  $("#mCancel").onclick=closeSheet;
+  $("#bSave").onclick=()=>{budget=Math.max(0,parseFloat($("#bAmt").value)||0);store.set("sd_budget",budget);
+    autosend=$("#cAuto").checked;store.set("sd_autosend",autosend);closeSheet();renderMoney();toast("บันทึกการตั้งค่าแล้ว ✓")}}
+$("#moCfg").onclick=openMoneySettings;
+function daySpend(dateKey){return txs.filter(t=>t.type==="out"&&t.date===dateKey).reduce((s,t)=>s+t.amount,0)}
+function renderBudget(){const card=$("#budgetCard");const spent=daySpend(todayKey());
+  if(!budget){card.className="budgetcard";card.innerHTML=`<div class="bh"><span class="bt">งบวันนี้ · Today</span>
+    <button class="setlink" id="bcSet">ตั้งงบรายวัน ＋</button></div>
+    <div class="bmsg">ใช้ไปวันนี้ <b>${baht(spent)}</b> — ตั้งงบเพื่อดูแถบเตือน</div>`;
+    $("#bcSet").onclick=openMoneySettings;return}
+  const pct=Math.min(100,spent/budget*100);const over=spent>budget;const warn=!over&&pct>=80;
+  card.className="budgetcard"+(over?" over":warn?" warn":"");
+  const left=budget-spent;
+  card.innerHTML=`<div class="bh"><span class="bt">งบวันนี้ · Today</span>
+    <span class="bv"><b>${baht(spent)}</b> / ${baht(budget)}</span></div>
+    <div class="btrack"><i style="width:${pct}%"></i></div>
+    <div class="bmsg">${over?`เกินงบ ${baht(spent-budget)} ⚠️`:`เหลืออีก ${baht(left)} วันนี้`}</div>`}
+function renderDashboard(list,exp){const[y,m]=curMonth.split("-").map(Number);
+  const isCur=curMonth===monthKey(todayKey());const now=new Date();
+  const elapsed=isCur?now.getDate():new Date(y,m,0).getDate();
+  const avg=exp/Math.max(1,elapsed);
+  const byCat={};list.filter(t=>t.type==="out").forEach(t=>byCat[t.cat]=(byCat[t.cat]||0)+t.amount);
+  const top=Object.entries(byCat).sort((a,b)=>b[1]-a[1])[0];
+  // over-budget days
+  let overDays=0;if(budget){const seen={};list.filter(t=>t.type==="out").forEach(t=>seen[t.date]=(seen[t.date]||0)+t.amount);
+    overDays=Object.values(seen).filter(v=>v>budget).length}
+  // vs last month
+  const lm=new Date(y,m-2,1);const lmKey=lm.getFullYear()+"-"+String(lm.getMonth()+1).padStart(2,"0");
+  const lmExp=txs.filter(t=>t.type==="out"&&monthKey(t.date)===lmKey).reduce((s,t)=>s+t.amount,0);
+  const diff=lmExp?Math.round((exp-lmExp)/lmExp*100):null;
+  const grid=$("#dashGrid");grid.innerHTML=`
+    <div class="dashtile"><div class="dl">เฉลี่ย/วัน</div><div class="dv">${baht(avg)}</div><div class="ds">${elapsed} วัน</div></div>
+    <div class="dashtile"><div class="dl">หมวดสูงสุด</div><div class="dv" style="font-size:1rem">${top?esc(catOf(top[0]).nm):"—"}</div><div class="ds">${top?baht(top[1]):""}</div></div>
+    <div class="dashtile"><div class="dl">วันที่เกินงบ</div><div class="dv">${budget?overDays:"—"}</div><div class="ds">${budget?"วัน":"ยังไม่ตั้งงบ"}</div></div>
+    <div class="dashtile"><div class="dl">เทียบเดือนก่อน</div><div class="dv">${diff===null?"—":(diff>0?"+":"")+diff+"%"}</div><div class="ds ${diff>0?"up":diff<0?"down":""}">${diff===null?"ไม่มีข้อมูล":diff>0?"ใช้มากขึ้น":"ใช้น้อยลง"}</div></div>`;
+  // 14-day spend chart
+  const chart=$("#spendChart");chart.innerHTML="";const days=[];let mx=budget||1;
+  for(let i=13;i>=0;i--){const d=new Date(now.getTime()-i*DAY);const key=dk(d);const v=daySpend(key);mx=Math.max(mx,v);
+    days.push({v,lab:d.getDate(),today:i===0})}
+  days.forEach(d=>{const col=document.createElement("div");col.className="col";
+    col.innerHTML=`<div class="cval">${d.v?Math.round(d.v):""}</div><div class="bar${d.today?" today":""}" style="height:${d.v/mx*100}%"></div><div class="cd">${d.lab}</div>`;chart.appendChild(col)})}
+function renderMoney(){const[y,m]=curMonth.split("-").map(Number);
+  $("#moLabel").textContent=new Date(y,m-1,1).toLocaleDateString(undefined,{month:"long",year:"numeric"});
+  const list=txs.filter(t=>monthKey(t.date)===curMonth).sort((a,b)=>b.date.localeCompare(a.date)||b.id.localeCompare(a.id));
+  let inc=0,exp=0;list.forEach(t=>t.type==="in"?inc+=t.amount:exp+=t.amount);const net=inc-exp;
+  $("#ioIn").textContent=baht(inc);$("#ioOut").textContent=baht(exp);
+  $("#balNet").textContent=(net<0?"−฿":"฿")+Math.abs(Math.round(net)).toLocaleString();$("#balNet").classList.toggle("neg",net<0);
+  renderBudget();renderDashboard(list,exp);
+  const bars=$("#catBars");bars.innerHTML="";const byCat={};list.filter(t=>t.type==="out").forEach(t=>byCat[t.cat]=(byCat[t.cat]||0)+t.amount);
+  const cats=Object.entries(byCat).sort((a,b)=>b[1]-a[1]);const max=cats.length?cats[0][1]:1;
+  if(!cats.length)bars.innerHTML=`<div class="empty" style="padding:16px">ยังไม่มีรายจ่ายเดือนนี้</div>`;
+  cats.forEach(([id,amt])=>{const c=catOf(id);const row=document.createElement("div");row.className="catrow";
+    row.innerHTML=`<span class="dot" style="background:${c.c}"></span><span class="nm">${esc(c.nm)}</span>
+      <span class="track"><i style="width:${Math.max(6,amt/max*100)}%;background:${c.c}"></i></span><span class="amt">${baht(amt)}</span>`;bars.appendChild(row)});
+  const ul=$("#txList");ul.innerHTML="";$("#txCount").textContent=list.length?list.length+" รายการ":"";
+  if(!list.length){ul.innerHTML=`<div class="empty"><div class="big">฿</div>ยังไม่มีรายการ</div>`;return}
+  list.forEach(t=>{const c=catOf(t.cat);const li=document.createElement("li");li.className="tx";
+    const dd=new Date(t.date+"T00:00").toLocaleDateString(undefined,{day:"numeric",month:"short"});
+    li.innerHTML=`<span class="tdot" style="background:${c.c}">${esc(c.nm[0]||"?")}</span>
+      <span class="ti"><span class="n">${esc(t.note||c.nm)}</span><span class="s">${esc(c.nm)} · ${dd}</span></span>
+      <span class="amt ${t.type}">${t.type==="in"?"+":"−"}${baht(t.amount).slice(1)}</span>
+      ${t.slip?`<button class="slipview" aria-label="ดูสลิป" title="ดูสลิป">🧾</button>`:""}
+      <a class="send${t.synced?" done":""}" href="${formUrl(t)}" target="_blank" rel="noopener" aria-label="Send to Sheet" title="ส่งเข้า Google Sheet">${t.synced?"✓":"⤴"}</a>
+      <button class="del" aria-label="Delete">✕</button>`;
+    if(t.slip)li.querySelector(".slipview").onclick=()=>viewSlip(t);
+    li.querySelector(".send").onclick=()=>{t.synced=true;saveTx();setTimeout(renderMoney,400)};
+    li.querySelector(".del").onclick=()=>{if(t.slip)delPhoto(t.id);txs=txs.filter(x=>x.id!==t.id);saveTx();renderMoney()};ul.appendChild(li)})}
+function txModal(type,pre){const cats=type==="in"?IN_CATS:OUT_CATS;let selCat=(pre&&pre.cat)||cats[0].id;
+  openSheet(`<h3>${type==="in"?"เพิ่มรายรับ · Income":"เพิ่มรายจ่าย · Expense"}</h3>
+    ${pre&&pre.raw?`<div class="parsed">อ่านจาก SCB: <b>฿${pre.amount||"?"}</b>${pre.note?" · "+esc(pre.note):""} <span style="color:var(--ink-3)">(แก้ไขได้)</span></div>`:""}
+    <label class="fl">จำนวนเงิน (บาท)</label><input class="amtin" id="mAmt" type="number" inputmode="decimal" placeholder="0" value="${(pre&&pre.amount)||""}">
+    <label class="fl">หมวด</label><div class="catpick" id="mCat"></div>
+    <label class="fl">บันทึก (ไม่บังคับ)</label><input id="mNote" placeholder="เช่น ข้าวเที่ยง, ค่ารถ" maxlength="60" value="${pre&&pre.note?esc(pre.note):""}">
+    <label class="fl">วันที่</label><input type="date" id="mDate" value="${(pre&&pre.date)||todayKey()}">
+    <label class="fl">สลิป (ไม่บังคับ)</label>
+    <img class="dphoto" id="slImg" alt="สลิป" ${pre&&pre.slip?"":"hidden"} ${pre&&pre.slip?`src="${pre.slip}"`:""}>
+    <button class="photobtn" id="slBtn">📷 ${pre&&pre.slip?"เปลี่ยนสลิป":"แนบรูปสลิป"}</button>
+    <input type="file" id="slFile" accept="image/*" hidden>
+    <div class="row2"><button class="cancel" id="mCancel">Cancel</button><button class="save" id="mSave">บันทึก</button></div>`);
+  let slipData=pre&&pre.slip!==undefined?pre.slip:undefined;
+  const cp=$("#mCat");cats.forEach(c=>{const b=document.createElement("button");b.textContent=c.nm;b.dataset.id=c.id;
+    if(c.id===selCat){b.classList.add("sel");b.style.background=c.c}
+    b.onclick=()=>{selCat=c.id;$$("#mCat button").forEach(x=>{x.classList.remove("sel");x.style.background=""});b.classList.add("sel");b.style.background=c.c};cp.appendChild(b)});
+  $("#slBtn").onclick=()=>$("#slFile").click();
+  $("#slFile").onchange=async e=>{const f=e.target.files[0];if(!f)return;$("#slBtn").textContent="กำลังบีบอัด…";
+    const data=await compressImage(f,1200,.7);if(data){slipData=data;$("#slImg").src=data;$("#slImg").hidden=false}$("#slBtn").textContent="📷 เปลี่ยนสลิป"};
+  $("#mAmt").focus();$("#mCancel").onclick=closeSheet;
+  $("#mSave").onclick=()=>{const amount=parseFloat($("#mAmt").value);if(!amount||amount<=0){$("#mAmt").focus();return}
+    const t={id:uid(),type,amount,cat:selCat,note:$("#mNote").value.trim(),date:$("#mDate").value||todayKey()};
+    if(slipData){putPhoto(t.id,slipData);t.slip=true}
+    txs.push(t);saveTx();curMonth=monthKey(t.date);
+    if(autosend){openExternal(formUrl(t));t.synced=true;saveTx()}
+    renderMoney();closeSheet();toast(autosend?"บันทึก + เปิดฟอร์มแล้ว ✓":"บันทึกแล้ว ✓")}}
+$("#addOut").onclick=()=>txModal("out");$("#addIn").onclick=()=>txModal("in");
+function slipModal(){openSheet(`<h3>อัปโหลดสลิป</h3>
+  <div class="hintline">เลือกประเภท → เลือกรูปสลิป → กรอกจำนวนเงินและรายละเอียด (แอปแนบรูปให้ ไม่อ่านตัวเลขอัตโนมัติ)</div>
+  <div class="row2"><button class="save" id="slOut" style="background:var(--rose)">− รายจ่าย</button><button class="save" id="slIn" style="background:var(--green)">+ รายรับ</button></div>
+  <div style="text-align:center;margin-top:12px"><button class="linkbtn" id="slPaste">หรือวางข้อความ SCB แทน</button></div>`);
+  $("#slOut").onclick=()=>pickSlip("out");$("#slIn").onclick=()=>pickSlip("in");$("#slPaste").onclick=pasteScbModal}
+function pickSlip(type){const inp=document.createElement("input");inp.type="file";inp.accept="image/*";
+  inp.onchange=async e=>{const f=e.target.files[0];const data=f?await compressImage(f,1200,.7):null;closeSheet();setTimeout(()=>txModal(type,{slip:data}),80)};
+  inp.click()}
+$("#slipBtn").onclick=slipModal;
+function viewSlip(t){getPhoto(t.id).then(d=>{if(!d){toast("ไม่พบรูปสลิป");return}
+  openSheet(`<h3>สลิป</h3><img class="dphoto" style="height:auto;max-height:68vh" src="${d}" alt="สลิป">
+    <div class="row2"><button class="cancel" id="mCancel">ปิด</button></div>`);$("#mCancel").onclick=closeSheet})}
+function pasteScbModal(){openSheet(`<h3>วางข้อความจาก SCB (LINE)</h3>
+  <div class="hintline">คัดลอกข้อความแจ้งเตือนจาก SCB ใน LINE แล้ววางที่นี่ — ระบบจะอ่านจำนวนเงินและร้านค้าให้</div>
+  <textarea id="mRaw" placeholder="เช่น: รายการใช้จ่ายผ่านบัตร 250.00 บาท ที่ STARBUCKS ..."></textarea>
+  <div class="row2"><button class="cancel" id="mCancel">Cancel</button><button class="save" id="mSave">อ่านข้อความ →</button></div>`);
+  $("#mRaw").focus();$("#mCancel").onclick=closeSheet;$("#mSave").onclick=()=>{const raw=$("#mRaw").value.trim();if(!raw)return;
+    const p=parseSCB(raw);closeSheet();setTimeout(()=>txModal(p.type,p),120)}}
+function parseSCB(text){const clean=text.replace(/(\d),(?=\d{3}\b)/g,"$1");let amt=null;
+  let m=clean.match(/(\d+(?:\.\d{1,2})?)\s*(?:บาท|thb|บ\.)/i)||clean.match(/(?:thb|บาท)\s*(\d+(?:\.\d{1,2})?)/i);if(m)amt=parseFloat(m[1]);
+  let type="out";if(/(เงินเข้า|รับเงิน|โอนเข้า|ได้รับ|received|credit|เครดิตเข้า|refund|คืนเงิน)/i.test(text))type="in";
+  if(/(จ่าย|ชำระ|ถอน|ซื้อ|โอนออก|หักบัญชี|debit|payment|purchase|ใช้จ่าย)/i.test(text))type="out";
+  let note="";let mm=text.match(/(?:ที่|at|ร้าน|merchant[:\s])\s*([^\n]+?)(?:\s*(?:เมื่อ|วันที่|เวลา|on\b|จำนวน|คงเหลือ|ref|บัญชี)|[\r\n]|$)/i);
+  if(mm)note=mm[1].trim().replace(/[.,;]+$/,"").slice(0,40);let cat=type==="in"?"transfer":"other";
+  if(type==="out"){if(/(starbucks|cafe|coffee|ร้านอาหาร|food|restaurant|kfc|mcdonald|ข้าว|shabu|อาหาร)/i.test(text))cat="food";
+    else if(/(bts|mrt|grab|taxi|bolt|ปตท|ptt|shell|น้ำมัน|โดยสาร|วิน|รถ)/i.test(text))cat="travel";
+    else if(/(lazada|shopee|central|robinson|uniqlo|mall|ช้อป|เสื้อ)/i.test(text))cat="shop";
+    else if(/(bill|electric|water|internet|true|ais|dtac|ค่าไฟ|ค่าน้ำ|ค่าเน็ต|ค่าโทร)/i.test(text))cat="bill";
+    else if(/(book|se-ed|หนังสือ|course|เรียน|มหาวิทยาลัย|university|hospital|clinic)/i.test(text))cat="study";
+    else if(/(pharmacy|watsons|boots|ยา|โรงพยาบาล)/i.test(text))cat="health";
+    else if(/(netflix|spotify|cinema|major|movie|game|เกม)/i.test(text))cat="fun"}
+  return{type,amount:amt,note,cat,date:todayKey(),raw:true}}
+$("#copySheet").onclick=()=>{const list=txs.filter(t=>monthKey(t.date)===curMonth).sort((a,b)=>a.date.localeCompare(b.date));
+  const rows=[["Date","Type","Category","Amount","Note"]];list.forEach(t=>rows.push([t.date,t.type==="in"?"รายรับ":"รายจ่าย",catOf(t.cat).nm,t.amount,t.note||""]));
+  const tsv=rows.map(r=>r.join("\t")).join("\n");const done=()=>toast("คัดลอกแล้ว — วางใน Google Sheets ได้เลย ✓");
+  if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(tsv).then(done).catch(()=>fallbackCopy(tsv,done));else fallbackCopy(tsv,done)};
+function fallbackCopy(text,cb){const ta=document.createElement("textarea");ta.value=text;ta.style.position="fixed";ta.style.opacity="0";
+  document.body.appendChild(ta);ta.select();try{document.execCommand("copy");cb()}catch(e){toast("คัดลอกไม่สำเร็จ")}document.body.removeChild(ta)}
+
+/* modal + util */
+function openSheet(html){$("#sheet").innerHTML=html;$("#modal").classList.add("on")}
+function closeSheet(){$("#modal").classList.remove("on")}
+$("#modal").addEventListener("click",e=>{if(e.target===$("#modal"))closeSheet()});
+/* in-app confirm (browser confirm() is blocked in the sandbox) */
+function confirmSheet(msg,onYes,yesLabel){openSheet(`<h3>ยืนยัน</h3>
+  <div class="hintline" style="font-size:.92rem;margin:2px 2px 16px">${esc(msg)}</div>
+  <div class="row2"><button class="cancel" id="cfNo">ยกเลิก</button><button class="save" id="cfYes" style="background:var(--rose)">${esc(yesLabel||"ลบ")}</button></div>`);
+  $("#cfNo").onclick=closeSheet;$("#cfYes").onclick=()=>{closeSheet();onYes()}}
+/* open external URL via anchor (window.open is blocked in the sandbox) */
+function openExternal(url){const a=document.createElement("a");a.href=url;a.target="_blank";a.rel="noopener";
+  document.body.appendChild(a);a.click();setTimeout(()=>a.remove(),200)}
+let toastT;function toast(msg){const el=$("#toast");el.textContent=msg;el.classList.add("on");clearTimeout(toastT);toastT=setTimeout(()=>el.classList.remove("on"),2200)}
+function esc(s){return String(s).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
+function clamp(n,a,b){return Math.max(a,Math.min(b,n||a))}
+
+/* init */
+$("#sortTog").classList.toggle("on",manualSort);
+renderExams();renderProjChips();renderDayLabel();renderTasks();renderStats();renderBars();setMode("focus");renderMoney();
+
+/* ===== account · backup · sync ===== */
+function collectData(){const d={};for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k&&k.indexOf("sd_")===0)d[k]=localStorage.getItem(k)}return d}
+function exportBackup(){const data={_app:"studydesk",_ver:1,_at:new Date().toISOString(),keys:collectData()};
+  const blob=new Blob([JSON.stringify(data)],{type:"application/json"});const url=URL.createObjectURL(blob);
+  const a=document.createElement("a");a.href=url;a.download="studydesk-backup-"+todayKey()+".json";document.body.appendChild(a);a.click();
+  setTimeout(()=>{a.remove();URL.revokeObjectURL(url)},200);toast("ดาวน์โหลดไฟล์สำรองแล้ว ✓")}
+function importBackup(file){const fr=new FileReader();fr.onload=()=>{let data;try{data=JSON.parse(fr.result)}catch(e){toast("ไฟล์ไม่ถูกต้อง");return}
+  if(!data||!data.keys){toast("ไฟล์ไม่ถูกต้อง");return}
+  confirmSheet("กู้คืนจากไฟล์นี้? ข้อมูลปัจจุบันในเครื่องจะถูกแทนที่ทั้งหมด",()=>{
+    Object.keys(collectData()).forEach(k=>localStorage.removeItem(k));
+    Object.entries(data.keys).forEach(([k,v])=>{try{localStorage.setItem(k,v)}catch(e){}});location.reload()},"กู้คืน")};fr.readAsText(file)}
+window.__sdReload=()=>location.reload();
+function isIOS(){return /iphone|ipad|ipod/i.test(navigator.userAgent)}
+function isStandalone(){return window.matchMedia("(display-mode: standalone)").matches||window.navigator.standalone===true}
+let deferredPrompt=null;window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();deferredPrompt=e});
+function openAccount(){const u=window.sdUser&&window.sdUser();const cfg=window.sdConfigured&&window.sdConfigured();
+  openSheet(`<h3>บัญชี & ข้อมูล</h3>
+    <div class="acctbox">${cfg?(u?`<div class="acctline"><span>เข้าสู่ระบบ: <b>${esc(u.email||"")}</b></span></div>
+        <div class="synced">☁️ ข้อมูลถูก sync ข้ามเครื่องอัตโนมัติ</div>
+        <button class="photobtn" id="acLogout" style="margin-top:8px">ออกจากระบบ</button>`
+      :`<button class="save" id="acLogin" style="width:100%">เข้าสู่ระบบด้วย Gmail</button>
+        <div class="hintline" style="margin-top:8px">ล็อกอินเพื่อ sync ข้อมูลข้าม iPhone ↔ คอมพิวเตอร์</div>`)
+    :`<div class="hintline">ยังไม่ได้ตั้งค่า Firebase — ตอนนี้ข้อมูลเก็บในเครื่องนี้เท่านั้น (ดู README เพื่อเปิดล็อกอิน Gmail + sync)</div>`}</div>
+    <label class="fl" style="margin-top:12px">สำรอง / กู้คืนข้อมูล</label>
+    <button class="photobtn" id="acExport">⬇️ ดาวน์โหลดไฟล์สำรอง (.json)</button>
+    <button class="photobtn" id="acImport">⬆️ กู้คืนจากไฟล์</button>
+    <input type="file" id="acFile" accept="application/json,.json" hidden>
+    ${!isStandalone()?`<label class="fl" style="margin-top:12px">ติดตั้งเป็นแอป</label>
+      <div class="hintline">${isIOS()?"เปิดใน Safari → ปุ่มแชร์ ↑ → \"เพิ่มไปยังหน้าจอโฮม\"":"กดปุ่มด้านล่างเพื่อติดตั้ง"}</div>
+      ${!isIOS()?`<button class="photobtn" id="acInstall">📲 ติดตั้งแอป</button>`:""}`:`<div class="synced" style="margin-top:12px">✅ กำลังใช้งานแบบติดตั้งแล้ว</div>`}
+    <div class="row2" style="margin-top:14px"><button class="cancel" id="mCancel">ปิด</button></div>`);
+  $("#mCancel").onclick=closeSheet;
+  $("#acExport").onclick=exportBackup;
+  $("#acImport").onclick=()=>$("#acFile").click();
+  $("#acFile").onchange=e=>{const f=e.target.files[0];if(f)importBackup(f)};
+  const li=$("#acLogin");if(li)li.onclick=()=>{closeSheet();window.sdLogin&&window.sdLogin()};
+  const lo=$("#acLogout");if(lo)lo.onclick=()=>{closeSheet();window.sdLogout&&window.sdLogout()};
+  const ins=$("#acInstall");if(ins)ins.onclick=async()=>{if(deferredPrompt){deferredPrompt.prompt();deferredPrompt=null;closeSheet()}else toast("ติดตั้งไม่พร้อมใช้งานตอนนี้")}}
+$("#account").onclick=openAccount;
+
+/* ===== in-app reminders (foreground only) ===== */
+const remindered=new Set();
+function checkReminders(){const now=new Date();const hm=String(now.getHours()).padStart(2,"0")+":"+String(now.getMinutes()).padStart(2,"0");const tk=todayKey();
+  tasks.forEach(t=>{if(t.done||t.due!==tk||!t.time)return;if(t.time<=hm&&!remindered.has(t.id)){remindered.add(t.id);
+    try{navigator.vibrate&&navigator.vibrate([100,50,100])}catch(e){}toast(`⏰ ถึงเวลา: ${t.t}`)}});
+  shifts.forEach(s=>{if(s.date!==tk||!s.time)return;const st=(s.time.match(/\d{1,2}:\d{2}/)||[])[0];if(st&&st<=hm&&!remindered.has("sh"+s.id)){remindered.add("sh"+s.id);
+    try{navigator.vibrate&&navigator.vibrate([100,50,100])}catch(e){}toast(`⏰ ถึงเวลาเวร: ${shiftType(s.type).nm}`)}})}
+setInterval(checkReminders,30000);checkReminders();
+</script>
+
+<!-- Service worker: offline + installable -->
+<script>
+if("serviceWorker" in navigator){window.addEventListener("load",function(){navigator.serviceWorker.register("sw.js").catch(function(){})})}
+</script>
+<!-- Your Firebase project config (edit firebase-config.js; leave as-is to run local-only) -->
+<script src="firebase-config.js"></script>
+<!-- Gmail login + cross-device sync (auto-activates once firebase-config.js is filled) -->
+<script type="module" src="sync.js"></script>
+</body>
+</html>

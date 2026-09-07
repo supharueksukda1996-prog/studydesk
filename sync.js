@@ -28,7 +28,19 @@ if (window.sdConfigured()) {
   let curUser = null, pushT = null, applyingRemote = false;
 
   window.sdUser = () => curUser ? { email: curUser.email, uid: curUser.uid } : null;
-  window.sdLogin = () => { signInWithPopup(auth, provider).catch(() => signInWithRedirect(auth, provider)); };
+  window.sdLogin = () => {
+    // popups are unreliable on phones / installed PWAs → use full-page redirect there
+    const mobile = window.matchMedia("(display-mode: standalone)").matches
+      || /iphone|ipad|ipod|android/i.test(navigator.userAgent);
+    if (mobile) { signInWithRedirect(auth, provider); return; }
+    signInWithPopup(auth, provider).catch((e) => {
+      const code = e && e.code;
+      if (code === "auth/popup-blocked" || code === "auth/cancelled-popup-request"
+          || code === "auth/popup-closed-by-user" || code === "auth/operation-not-supported-in-this-environment") {
+        signInWithRedirect(auth, provider);
+      } else if (code) { try { alert("ล็อกอินไม่สำเร็จ: " + code); } catch (_) {} }
+    });
+  };
   const wipeLocal = () => {
     const rm = [];
     for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i); if (k && k.indexOf("sd_") === 0) rm.push(k); }

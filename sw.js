@@ -1,5 +1,5 @@
 /* StudyDesk service worker — offline app shell + installable PWA */
-const CACHE = "studydesk-v1";
+const CACHE = "studydesk-v2";
 const CORE = [
   "./", "./index.html", "./manifest.webmanifest",
   "./icon-192.png", "./icon-512.png", "./apple-touch-icon.png",
@@ -22,10 +22,9 @@ self.addEventListener("activate", (e) => {
 
 self.addEventListener("fetch", (e) => {
   const req = e.request;
-  if (req.method !== "GET") return; // never cache writes (Firestore etc.)
+  if (req.method !== "GET") return;
   const url = new URL(req.url);
 
-  // App navigations → network first, fall back to cached shell (offline)
   if (req.mode === "navigate") {
     e.respondWith(
       fetch(req).then((r) => { caches.open(CACHE).then((c) => c.put("./index.html", r.clone())); return r; })
@@ -34,17 +33,15 @@ self.addEventListener("fetch", (e) => {
     return;
   }
 
-  // Same-origin assets → cache first
   if (url.origin === location.origin) {
     e.respondWith(
-      caches.match(req).then((c) => c || fetch(req).then((r) => {
+      fetch(req).then((r) => {
         const cp = r.clone(); caches.open(CACHE).then((ca) => ca.put(req, cp)); return r;
-      }))
+      }).catch(() => caches.match(req))
     );
     return;
   }
 
-  // Cross-origin: cache fonts + the Firebase SDK (from gstatic); everything else network-only
   if (/gstatic\.com|fonts\.googleapis\.com|cdnjs\.cloudflare\.com|jsdelivr\.net/.test(url.host)) {
     e.respondWith(
       caches.match(req).then((c) => c || fetch(req).then((r) => {
@@ -53,6 +50,5 @@ self.addEventListener("fetch", (e) => {
     );
     return;
   }
-  // Firestore / auth / other APIs — always go to the network
   e.respondWith(fetch(req).catch(() => caches.match(req)));
 });

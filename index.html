@@ -49,16 +49,17 @@
   --shadow-lift:0 2px 8px rgba(0,0,0,.4),0 20px 46px rgba(0,0,0,.5)}
 *{box-sizing:border-box}
 body{margin:0;background:var(--ground);color:var(--ink);
-  font-family:"Public Sans",system-ui,-apple-system,sans-serif;-webkit-font-smoothing:antialiased;line-height:1.45}
+  font-family:"Public Sans",system-ui,-apple-system,sans-serif;-webkit-font-smoothing:antialiased;line-height:1.45;
+  height:100vh;height:100dvh;overflow:hidden;overscroll-behavior:none}
 button{font-family:inherit;cursor:pointer}
 input,textarea,select{font-family:inherit}
 a{color:inherit}
 :focus-visible{outline:2.5px solid var(--accent);outline-offset:2px;border-radius:6px}
 
-.app{max-width:470px;margin:0 auto;min-height:100vh;min-height:100dvh;background:var(--ground);
+.app{max-width:470px;margin:0 auto;height:100vh;height:100dvh;background:var(--ground);overflow:hidden;
   display:flex;flex-direction:column;position:relative;box-shadow:0 0 0 1px var(--line)}
-@media(min-width:520px){.app{margin-top:18px;margin-bottom:18px;min-height:calc(100dvh - 36px);
-  border-radius:26px;overflow:hidden;box-shadow:var(--shadow-lift)}}
+@media(min-width:520px){.app{margin-top:18px;margin-bottom:18px;height:calc(100dvh - 36px);
+  border-radius:26px;box-shadow:var(--shadow-lift)}}
 .top{padding:22px 20px 10px;display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
 .hello{font-family:"Fraunces",Georgia,serif;font-weight:600;font-size:1.55rem;letter-spacing:-.01em;text-wrap:balance;margin:0 0 2px;line-height:1.1}
 .hello em{font-style:italic;color:var(--gold-ink)}
@@ -74,6 +75,7 @@ a{color:inherit}
 .eyebrow{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--ink-3);
   margin:18px 4px 9px;display:flex;align-items:center;justify-content:space-between;gap:8px}
 .eyebrow .count{color:var(--accent)}
+.typesel{margin-left:auto;font-family:inherit;font-size:.72rem;font-weight:600;color:var(--ink-2);background:var(--surface);border:1px solid var(--line-2);border-radius:8px;padding:4px 8px;text-transform:none;letter-spacing:normal;box-shadow:var(--shadow)}
 .linkbtn{border:none;background:none;color:var(--accent);font-size:.74rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;padding:2px 4px}
 
 /* exams */
@@ -147,6 +149,8 @@ a{color:inherit}
 .task .meta{display:flex;gap:7px;align-items:center;margin-top:4px;font-size:.72rem;color:var(--ink-3);flex-wrap:wrap}
 .pill{padding:2px 8px;border-radius:20px;font-weight:600;font-size:.68rem}
 .pill.over{background:var(--rose);color:#fff}
+.pill.carried{background:var(--rose);color:#fff;font-weight:700}
+.task.carried{border-left-color:var(--rose)!important;background:linear-gradient(90deg,var(--rose-soft),var(--surface) 60%)}
 .pill.proj{background:var(--blue-soft);color:var(--blue)}
 .pill.place{background:var(--surface-2);color:var(--ink-2)}
 .mini-ic{display:inline-flex;align-items:center;gap:3px}
@@ -320,6 +324,11 @@ a{color:inherit}
 .dashtile .ds{font-size:.7rem;color:var(--ink-3);margin-top:2px}
 .dashtile .ds.up{color:var(--rose)}.dashtile .ds.down{color:var(--green)}
 .dashcard{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px;margin-top:10px}
+.insightcard{background:var(--gold-soft);border:1px solid var(--gold);border-radius:var(--radius);padding:13px 15px;margin:2px 0 10px}
+.insightcard .ictitle{font-size:.74rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--gold-ink);margin-bottom:7px}
+:root[data-theme="dark"] .insightcard .ictitle,:root:not([data-theme="light"]) .insightcard .ictitle{color:var(--gold)}
+.insightcard .icrow{font-size:.86rem;color:var(--ink);padding:3px 0;line-height:1.4}
+.insightcard .icrow b{font-family:"IBM Plex Mono",monospace}
 .dashcard .dctl{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-3);margin-bottom:14px}
 #spendChart .bar{background:var(--rose)}#spendChart .bar.today{background:var(--gold)}
 
@@ -409,7 +418,7 @@ a{color:inherit}
     <section class="view on" id="v-today">
       <div class="eyebrow">Exams &amp; deadlines</div>
       <div class="exam-strip" id="examStrip"></div>
-      <div class="eyebrow">Projects</div>
+      <div class="eyebrow">Projects <select id="projTypeFilter" class="typesel"></select></div>
       <div class="chips" id="projChips"></div>
       <div class="daybar">
         <div class="nav2">
@@ -501,6 +510,7 @@ a{color:inherit}
         </div>
       </div>
       <div class="eyebrow">Dashboard · ภาพรวมการใช้เงิน</div>
+      <div class="insightcard" id="insightCard" hidden></div>
       <div class="dashgrid" id="dashGrid"></div>
       <div class="dashcard" id="trendCard">
         <div class="dctl">รายจ่ายรายวัน · Daily spend (14 วันล่าสุด)</div>
@@ -562,6 +572,7 @@ const IN_CATS=[{id:"salary",nm:"เงินเดือน",c:"#2E8B57"},{id:"t
   {id:"allow",nm:"เงินให้",c:"#3F8FD6"},{id:"other_in",nm:"อื่นๆ",c:"#8A93A6"}];
 const catOf=id=>[...OUT_CATS,...IN_CATS].find(c=>c.id===id)||{nm:id,c:"#8A93A6"};
 const PROJ_COLORS=["#3F6FD6","#B65FC0","#E0863C","#2E8B57","#C4453B","#12897E","#D9A521"];
+const PROJECT_TYPES=["วิชาเรียน","งานวิจัย","งานกลุ่ม","สอบ/Exam","ส่วนตัว","อื่นๆ"];
 
 /* seed */
 function seed(){if(store.get("sd_init3"))return;
@@ -587,7 +598,7 @@ seed();
 
 let exams=store.get("sd_exams",[]),tasks=store.get("sd_tasks",[]),projects=store.get("sd_projects",[]),
     habits=store.get("sd_habits",[]),txs=store.get("sd_tx",[]);
-let curQuad="q2",projFilter="",selDay=todayKey(),matrixMode=false,curMonth=monthKey(todayKey());
+let curQuad="q2",projFilter="",selDay=todayKey(),matrixMode=false,curMonth=monthKey(todayKey()),projTypeF="";
 let manualSort=store.get("sd_manualsort",false);
 let shifts=store.get("sd_shifts",[]);
 const saveExams=()=>store.set("sd_exams",exams),saveTasks=()=>store.set("sd_tasks",tasks),
@@ -650,20 +661,32 @@ function taskCalUrl(t){if(!t.due)return"#";
 /* ===== EXAMS ===== */
 function renderExams(){const strip=$("#examStrip");const now=new Date();now.setHours(0,0,0,0);
   exams.sort((a,b)=>a.date.localeCompare(b.date));strip.innerHTML="";
+  const add=document.createElement("button");add.className="exam-add";add.textContent="+";add.setAttribute("aria-label","เพิ่มวันสอบ");add.onclick=()=>examModal();strip.appendChild(add);
   exams.forEach(e=>{const d=Math.round((new Date(e.date+"T00:00")-now)/DAY);const cls=d<=3?"soon":d<=10?"warn":"";
     const el=document.createElement("div");el.className="exam "+cls;
     el.innerHTML=`<button class="x" aria-label="Remove">✕</button><div class="d">${d<0?"—":d}<small>${d===1?"day":"days"}</small></div>
       <div class="nm">${esc(e.name)}</div><div class="dt">${new Date(e.date+"T00:00").toLocaleDateString(undefined,{month:"short",day:"numeric"})}
       <a class="cal" href="${gcal(e.name,e.date,"Exam")}" target="_blank" rel="noopener">＋cal</a></div>`;
-    el.querySelector(".x").onclick=()=>{exams=exams.filter(x=>x.id!==e.id);saveExams();renderExams()};strip.appendChild(el)});
-  const add=document.createElement("button");add.className="exam-add";add.textContent="+";add.setAttribute("aria-label","Add exam");add.onclick=examModal;strip.appendChild(add)}
-function examModal(){openSheet(`<h3>Add an exam or deadline</h3><input id="mName" placeholder="e.g. Physiology final" maxlength="60">
-  <input type="date" id="mDate" value="${todayKey()}"><div class="row2"><button class="cancel" id="mCancel">Cancel</button><button class="save" id="mSave">Add</button></div>`);
-  $("#mName").focus();$("#mCancel").onclick=closeSheet;$("#mSave").onclick=()=>{const name=$("#mName").value.trim(),date=$("#mDate").value;
-    if(!name||!date)return;exams.push({id:uid(),name,date});saveExams();renderExams();closeSheet()}}
+    el.querySelector(".x").onclick=ev=>{ev.stopPropagation();exams=exams.filter(x=>x.id!==e.id);saveExams();renderExams()};
+    el.querySelector(".nm").onclick=()=>examModal(e);el.querySelector(".d").onclick=()=>examModal(e);
+    strip.appendChild(el)})}
+function examModal(e){const edit=!!e;e=e||{};
+  openSheet(`<h3>${edit?"แก้ไขวันสอบ":"เพิ่มวันสอบ / กำหนดส่ง"}</h3>
+  <label class="fl">ชื่อ</label><input id="mName" placeholder="เช่น Physiology final" maxlength="60" autocomplete="off" value="${esc(e.name||"")}">
+  <label class="fl">วันที่</label><input type="date" id="mDate" value="${e.date||todayKey()}">
+  <div class="row2"><button class="cancel" id="mCancel">${edit?"ลบ":"Cancel"}</button><button class="save" id="mSave">${edit?"บันทึก":"เพิ่ม"}</button></div>`);
+  try{if(!$("#mDate").value)$("#mDate").value=todayKey()}catch(er){}
+  $("#mName").focus();
+  $("#mCancel").onclick=edit?()=>{closeSheet();confirmSheet(`ลบ "${e.name}"?`,()=>{exams=exams.filter(x=>x.id!==e.id);saveExams();renderExams()})}:closeSheet;
+  $("#mSave").onclick=()=>{const name=$("#mName").value.trim();const date=$("#mDate").value||todayKey();
+    if(!name){$("#mName").focus();toast("ใส่ชื่อก่อนนะครับ");return}
+    if(edit){e.name=name;e.date=date}else{exams.push({id:uid(),name,date})}
+    saveExams();renderExams();closeSheet();toast(edit?"บันทึกแล้ว ✓":"เพิ่มวันสอบแล้ว ✓")}}
 
 /* ===== PROJECTS ===== */
 function renderProjChips(){const c=$("#projChips");c.innerHTML="";
+  const sel=$("#projTypeFilter");if(sel){sel.innerHTML=`<option value=""${projFilter===""?" selected":""}>↦ เลือกโปรเจกต์…</option>`+projects.map(p=>`<option value="${p.id}"${projFilter===p.id?" selected":""}>${esc(p.name)}</option>`).join("");
+    sel.onchange=()=>{projFilter=sel.value;renderProjChips();renderTasks()}}
   const all=document.createElement("button");all.className="chip"+(projFilter===""?" on":"");all.textContent="ทั้งหมด";
   all.onclick=()=>{projFilter="";renderProjChips();renderTasks()};c.appendChild(all);
   projects.forEach(p=>{const active=projFilter===p.id;const b=document.createElement("button");b.className="chip"+(active?" on":"");
@@ -676,18 +699,34 @@ function renderProjChips(){const c=$("#projChips");c.innerHTML="";
       projFilter=active?"":p.id;renderProjChips();renderTasks()};
     c.appendChild(b)});
   const add=document.createElement("button");add.className="chip add";add.textContent="＋ Project";add.onclick=projModal;c.appendChild(add)}
-function projModal(){openSheet(`<h3>New project</h3><input id="mName" placeholder="e.g. Cardiology block" maxlength="40">
-  <div class="hintline">วิธีลบ: แตะเลือกโปรเจกต์ แล้วกดปุ่ม ✕ ที่ขึ้นบนชิป</div>
-  <div class="row2"><button class="cancel" id="mCancel">Cancel</button><button class="save" id="mSave">Create</button></div>`);
+function projModal(){openSheet(`<h3>โปรเจกต์ใหม่</h3>
+  <label class="fl">ชื่อ</label><input id="mName" placeholder="เช่น Cardiology block" maxlength="40" autocomplete="off">
+  <label class="fl">ชนิดโปรเจกต์</label><select id="mType">${PROJECT_TYPES.map(t=>`<option>${t}</option>`).join("")}</select>
+  <label class="fl">คำอธิบาย (ไม่บังคับ)</label><textarea id="mDesc" placeholder="รายละเอียดโปรเจกต์…"></textarea>
+  <div class="row2"><button class="cancel" id="mCancel">Cancel</button><button class="save" id="mSave">สร้าง</button></div>`);
   $("#mName").focus();$("#mCancel").onclick=closeSheet;$("#mSave").onclick=()=>{const n=$("#mName").value.trim();if(!n)return;
-    projects.push({id:uid(),name:n,color:PROJ_COLORS[projects.length%PROJ_COLORS.length],subtasks:[]});saveProjects();closeSheet();renderProjChips()}}
+    projects.push({id:uid(),name:n,type:$("#mType").value,desc:$("#mDesc").value.trim(),color:PROJ_COLORS[projects.length%PROJ_COLORS.length],subtasks:[]});saveProjects();closeSheet();renderProjChips()}}
+function projectEdit(p){openSheet(`<h3>แก้ไขโปรเจกต์</h3>
+  <label class="fl">ชื่อ</label><input id="peName" value="${esc(p.name)}" maxlength="40">
+  <label class="fl">ชนิด</label><select id="peType">${PROJECT_TYPES.map(t=>`<option ${p.type===t?"selected":""}>${t}</option>`).join("")}</select>
+  <label class="fl">คำอธิบาย</label><textarea id="peDesc" placeholder="รายละเอียด…">${esc(p.desc||"")}</textarea>
+  <label class="fl">สี</label><div class="catpick" id="peColor">${PROJ_COLORS.map(c=>`<button data-c="${c}" style="background:${c};width:32px;height:32px;border-radius:50%;padding:0;border:none;${p.color===c?"outline:3px solid var(--ink);outline-offset:2px":""}"></button>`).join("")}</div>
+  <div class="row2"><button class="cancel" id="peDel">ลบโปรเจกต์</button><button class="save" id="peSave">บันทึก</button></div>`);
+  let col=p.color;$("#peColor").onclick=e=>{const b=e.target.closest("button");if(!b)return;col=b.dataset.c;$$("#peColor button").forEach(x=>{x.style.outline="";x.style.outlineOffset=""});b.style.outline="3px solid var(--ink)";b.style.outlineOffset="2px"};
+  $("#peDel").onclick=()=>{closeSheet();confirmSheet(`ลบโปรเจกต์ "${p.name}"? งานจะยังอยู่ แต่ไม่ผูกกับโปรเจกต์นี้`,()=>{projects=projects.filter(x=>x.id!==p.id);tasks.forEach(t=>{if(t.proj===p.id)t.proj=""});saveProjects();saveTasks();projFilter="";renderProjChips();renderTasks()})};
+  $("#peSave").onclick=()=>{p.name=$("#peName").value.trim()||p.name;p.type=$("#peType").value;p.desc=$("#peDesc").value.trim();p.color=col;saveProjects();closeSheet();renderProjChips();renderTasks();toast("บันทึกแล้ว ✓")}}
 const QCYCLE=["q1","q2","q3","q4"];
 function projectSheet(p){
-  openSheet(`<h3>${esc(p.name)}</h3>
-    <div class="hintline">งานย่อยทั้งหมดของโปรเจกต์นี้ · ตั้งวัน + แตะป้ายสีเพื่อปรับความเร่งด่วน · งานที่ยังไม่ใส่วัน = ค้างไว้ที่นี่ (ยังไม่ขึ้น Today) · ลากปุ่ม ⠿ เพื่อเรียงลำดับ</div>
+  openSheet(`<div style="display:flex;align-items:center;justify-content:space-between;gap:10px">
+      <h3 style="margin:0"><span style="display:inline-block;width:11px;height:11px;border-radius:50%;background:${p.color};margin-right:7px"></span>${esc(p.name)}</h3>
+      <button class="linkbtn" id="psEdit">✎ แก้ไข</button></div>
+    ${p.type?`<div style="margin:2px 0 4px"><span class="pill proj">${esc(p.type)}</span></div>`:""}
+    ${p.desc?`<div class="hintline" style="white-space:pre-wrap">${esc(p.desc)}</div>`:""}
+    <div class="hintline">งานย่อยของโปรเจกต์นี้ · ตั้งวัน + แตะป้ายสีปรับความเร่งด่วน · ไม่ใส่วัน = ค้างไว้ที่นี่ · ลาก ⠿ เรียงได้</div>
     <div id="psList" class="sublist"></div>
     <div class="addrow" style="margin:12px 0 0"><input id="psInput" placeholder="เพิ่มงานย่อย…" maxlength="80" autocomplete="off"><button class="iadd" id="psAdd" aria-label="Add">+</button></div>
     <div class="row2" style="margin-top:14px"><button class="cancel" id="mCancel">ปิด</button><button class="save" id="psFilter">กรองดูใน Today</button></div>`);
+  $("#psEdit").onclick=()=>projectEdit(p);
   const render=()=>{const box=$("#psList");box.innerHTML="";
     const list=tasks.filter(t=>t.proj===p.id).sort((a,b)=>(a.order||0)-(b.order||0));
     if(!list.length){box.innerHTML=`<div class="hintline" style="text-align:center;padding:8px">ยังไม่มีงานย่อย</div>`}
@@ -795,8 +834,10 @@ function openDatePicker(){let pm=selDay.slice(0,7);
   $("#cToday").onclick=()=>{selDay=todayKey();renderDayLabel();renderTasks();closeSheet()};
   $("#cClose").onclick=closeSheet}
 function projMatch(t){return !projFilter||t.proj===projFilter}
-function taskLine(t,drag){const li=document.createElement("li");li.className="task "+t.quad+(t.done?" done":"");li.dataset.id=t.id;
+function taskLine(t,drag){const li=document.createElement("li");li.className="task "+t.quad+(t.done?" done":"")+(t.carried&&!t.done?" carried":"");li.dataset.id=t.id;
   const now=new Date(todayKey()+"T00:00");let meta="",cal="";
+  if(t.carried&&!t.done&&t.origDue){const cd=Math.round((now-new Date(t.origDue+"T00:00"))/DAY);
+    meta+=`<span class="pill carried">🔴 ค้างมา ${cd} วัน</span>`}
   if(t.due){const d=Math.round((new Date(t.due+"T00:00")-now)/DAY);const over=d<0&&!t.done;
     if(over)meta+=`<span class="pill over">${-d}d overdue</span>`;
     if(t.time)meta+=`<span class="pill place">🕐 ${esc(t.time)}</span>`;
@@ -1073,6 +1114,24 @@ function renderDashboard(list,exp){const[y,m]=curMonth.split("-").map(Number);
   const lm=new Date(y,m-2,1);const lmKey=lm.getFullYear()+"-"+String(lm.getMonth()+1).padStart(2,"0");
   const lmExp=txs.filter(t=>t.type==="out"&&monthKey(t.date)===lmKey).reduce((s,t)=>s+t.amount,0);
   const diff=lmExp?Math.round((exp-lmExp)/lmExp*100):null;
+  // ===== spending insight / awareness =====
+  const inc=list.filter(t=>t.type==="in").reduce((s,t)=>s+t.amount,0);
+  const daysInMonth=new Date(y,m,0).getDate();
+  const projected=avg*daysInMonth;
+  const todaySpend=isCur?daySpend(todayKey()):0;
+  const ic=$("#insightCard");const msgs=[];
+  if(exp>0){
+    msgs.push(`📊 ถ้าใช้เท่านี้ทั้งเดือน จะใช้ราว <b>${baht(projected)}</b>${inc?` จากรายรับ ${baht(inc)}`:""}`);
+    if(inc>0){const rate=Math.round((inc-exp)/inc*100);
+      msgs.push(rate>=0?`💚 เดือนนี้เก็บออมได้ <b>${rate}%</b> ของรายรับ`:`⚠️ เดือนนี้ใช้เกินรายรับ <b>${baht(exp-inc)}</b>`);}
+    if(isCur&&todaySpend>0){
+      if(budget&&todaySpend>budget)msgs.push(`🔴 วันนี้ใช้ ${baht(todaySpend)} <b>เกินงบ/วัน</b> (${baht(budget)}) แล้ว`);
+      else if(todaySpend>avg*1.3)msgs.push(`🟡 วันนี้ใช้ ${baht(todaySpend)} <b>สูงกว่าค่าเฉลี่ย</b> (${baht(avg)}/วัน)`);
+      else msgs.push(`🟢 วันนี้ใช้ ${baht(todaySpend)} — อยู่ในเกณฑ์ดี`);}
+    if(top){const p=Math.round(top[1]/exp*100);msgs.push(`หมวด <b>${esc(catOf(top[0]).nm)}</b> กินไป ${p}% ของรายจ่ายเดือนนี้`);}
+  }
+  if(msgs.length){ic.hidden=false;ic.innerHTML=`<div class="ictitle">💡 เตือนสติการใช้เงิน</div>`+msgs.map(m=>`<div class="icrow">${m}</div>`).join("");}
+  else ic.hidden=true;
   const grid=$("#dashGrid");grid.innerHTML=`
     <div class="dashtile"><div class="dl">เฉลี่ย/วัน</div><div class="dv">${baht(avg)}</div><div class="ds">${elapsed} วัน</div></div>
     <div class="dashtile"><div class="dl">หมวดสูงสุด</div><div class="dv" style="font-size:1rem">${top?esc(catOf(top[0]).nm):"—"}</div><div class="ds">${top?baht(top[1]):""}</div></div>
@@ -1194,6 +1253,11 @@ function clamp(n,a,b){return Math.max(a,Math.min(b,n||a))}
 
 /* init */
 $("#sortTog").classList.toggle("on",manualSort);
+/* carry unfinished tasks forward to today, flag them as carried-over */
+(function rollOver(){const tk=todayKey();let changed=false;
+  tasks.forEach(t=>{if(!t.done&&t.due&&t.due<tk){t.origDue=t.origDue||t.due;t.carried=true;t.due=tk;changed=true}
+    else if(t.done&&t.carried){delete t.carried}});
+  if(changed)saveTasks();})();
 renderExams();renderProjChips();renderDayLabel();renderTasks();renderStats();renderBars();setMode("focus");renderMoney();
 
 /* ===== account · backup · sync ===== */

@@ -86,10 +86,11 @@ if (window.sdConfigured()) {
       const snap = await getDoc(doc(db, "users", user.uid));
       if (snap.exists()) {
         const rd = snap.data(); const remoteAt = rd.updatedAt || 0; const localAt = +(localStorage.getItem("sd_synctime") || 0);
-        if (remoteAt >= localAt && rd.data) {
+        // strictly greater — avoids an infinite reload loop right after login
+        if (remoteAt > localAt && rd.data) {
           applyRemote(rd.data); localStorage.setItem("sd_synctime", String(remoteAt));
           if (window.__sdReload) return window.__sdReload();
-        }
+        } else { localStorage.setItem("sd_synctime", String(Math.max(remoteAt, localAt))); }
       }
     } catch (e) {}
     window.__sdOnChange = debouncedPush;

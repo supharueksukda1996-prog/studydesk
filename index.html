@@ -1063,30 +1063,16 @@ $("#addHabit").onclick=()=>{openSheet(`<h3>นิสัยใหม่ · New ha
 /* ===== MONEY ===== */
 const baht=n=>"฿"+Math.round(n).toLocaleString();
 let budget=store.get("sd_budget",0);
-let autosend=store.get("sd_autosend",false);
-const FORM={base:"https://docs.google.com/forms/d/e/1FAIpQLSdyXTbc_vVEeEvyRvBdTGXO1XOewrPp622xNTK8ixLPphdTFQ/viewform",
-  amount:"entry.912423403",type:"entry.681622332",cat:"entry.892310450",note:"entry.1657540660",date:"entry.311364491"};
-function formUrl(t){const p=new URLSearchParams();p.set("usp","pp_url");
-  p.set(FORM.amount,String(t.amount));p.set(FORM.type,t.type==="in"?"รายรับ":"รายจ่าย");
-  p.set(FORM.cat,catOf(t.cat).nm);p.set(FORM.note,t.note||"");p.set(FORM.date,t.date);
-  return FORM.base+"?"+p.toString()}
-function sendToSheet(t){openExternal(formUrl(t));t.synced=true;saveTx();renderMoney()}
 function shiftMonth(delta){const[y,m]=curMonth.split("-").map(Number);const d=new Date(y,m-1+delta,1);
   curMonth=d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0");renderMoney()}
 $("#moPrev").onclick=()=>shiftMonth(-1);$("#moNext").onclick=()=>shiftMonth(1);
 function openMoneySettings(){openSheet(`<h3>ตั้งค่าการเงิน</h3>
   <label class="fl">งบใช้จ่ายต่อวัน (บาท)</label>
   <input class="amtin" id="bAmt" type="number" inputmode="decimal" placeholder="0" value="${budget||""}">
-  <div class="hintline">ตั้ง 0 เพื่อปิดการเตือนงบ</div>
-  <label class="fl">Google Sheet</label>
-  <label class="togrow"><span>เปิดฟอร์มอัตโนมัติหลังบันทึกรายการ<br><small>แตะ Submit ในฟอร์มเพื่อบันทึกลงชีต</small></span>
-    <input type="checkbox" id="cAuto" ${autosend?"checked":""}></label>
-  <button class="photobtn" id="cTest" style="margin-top:12px">🔗 เปิดฟอร์มทดสอบ</button>
+  <div class="hintline">ตั้ง 0 เพื่อปิดการเตือนงบ · ปุ่ม "Copy" ด้านบนคัดลอกรายการทั้งเดือนไปวางใน Google Sheets ได้</div>
   <div class="row2"><button class="cancel" id="mCancel">ปิด</button><button class="save" id="bSave">บันทึก</button></div>`);
-  $("#cTest").onclick=()=>openExternal(FORM.base);
   $("#mCancel").onclick=closeSheet;
-  $("#bSave").onclick=()=>{budget=Math.max(0,parseFloat($("#bAmt").value)||0);store.set("sd_budget",budget);
-    autosend=$("#cAuto").checked;store.set("sd_autosend",autosend);closeSheet();renderMoney();toast("บันทึกการตั้งค่าแล้ว ✓")}}
+  $("#bSave").onclick=()=>{budget=Math.max(0,parseFloat($("#bAmt").value)||0);store.set("sd_budget",budget);closeSheet();renderMoney();toast("บันทึกงบแล้ว ✓")}}
 $("#moCfg").onclick=openMoneySettings;
 function daySpend(dateKey){return txs.filter(t=>t.type==="out"&&t.date===dateKey).reduce((s,t)=>s+t.amount,0)}
 function renderBudget(){const card=$("#budgetCard");const spent=daySpend(todayKey());
@@ -1164,10 +1150,8 @@ function renderMoney(){const[y,m]=curMonth.split("-").map(Number);
       <span class="ti"><span class="n">${esc(t.note||c.nm)}</span><span class="s">${esc(c.nm)} · ${dd}</span></span>
       <span class="amt ${t.type}">${t.type==="in"?"+":"−"}${baht(t.amount).slice(1)}</span>
       ${t.slip?`<button class="slipview" aria-label="ดูสลิป" title="ดูสลิป">🧾</button>`:""}
-      <a class="send${t.synced?" done":""}" href="${formUrl(t)}" target="_blank" rel="noopener" aria-label="Send to Sheet" title="ส่งเข้า Google Sheet">${t.synced?"✓":"⤴"}</a>
       <button class="del" aria-label="Delete">✕</button>`;
     if(t.slip)li.querySelector(".slipview").onclick=()=>viewSlip(t);
-    li.querySelector(".send").onclick=()=>{t.synced=true;saveTx();setTimeout(renderMoney,400)};
     li.querySelector(".del").onclick=()=>{if(t.slip)delPhoto(t.id);txs=txs.filter(x=>x.id!==t.id);saveTx();renderMoney()};ul.appendChild(li)})}
 function txModal(type,pre){const cats=type==="in"?IN_CATS:OUT_CATS;let selCat=(pre&&pre.cat)||cats[0].id;
   openSheet(`<h3>${type==="in"?"เพิ่มรายรับ · Income":"เพิ่มรายจ่าย · Expense"}</h3>
@@ -1193,8 +1177,7 @@ function txModal(type,pre){const cats=type==="in"?IN_CATS:OUT_CATS;let selCat=(p
     const t={id:uid(),type,amount,cat:selCat,note:$("#mNote").value.trim(),date:$("#mDate").value||todayKey()};
     if(slipData){putPhoto(t.id,slipData);t.slip=true}
     txs.push(t);saveTx();curMonth=monthKey(t.date);
-    if(autosend){openExternal(formUrl(t));t.synced=true;saveTx()}
-    renderMoney();closeSheet();toast(autosend?"บันทึก + เปิดฟอร์มแล้ว ✓":"บันทึกแล้ว ✓")}}
+    renderMoney();closeSheet();toast("บันทึกแล้ว ✓")}}
 $("#addOut").onclick=()=>txModal("out");$("#addIn").onclick=()=>txModal("in");
 function slipModal(){openSheet(`<h3>อัปโหลดสลิป</h3>
   <div class="hintline">เลือกประเภท → เลือกรูปสลิป → กรอกจำนวนเงินและรายละเอียด (แอปแนบรูปให้ ไม่อ่านตัวเลขอัตโนมัติ)</div>

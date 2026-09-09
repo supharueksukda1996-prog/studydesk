@@ -207,6 +207,7 @@ a{color:inherit}
 .setts{display:flex;gap:18px;justify-content:center;margin-top:18px;font-size:.82rem;color:var(--ink-2)}
 .setts label{display:flex;align-items:center;gap:7px;font-weight:600}
 .setts input{width:52px;padding:6px 8px;border-radius:8px;border:1px solid var(--line-2);background:var(--surface);color:var(--ink);text-align:center;font-family:"IBM Plex Mono",monospace}
+.setts .soundtog input{width:auto;transform:scale(1.3);padding:0}
 .fstats{width:100%;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px;margin-top:22px}
 .fstats .ttl{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--ink-3);margin-bottom:14px}
 .barchart{display:flex;align-items:flex-end;gap:8px;height:96px}
@@ -469,6 +470,7 @@ a{color:inherit}
         <div class="setts">
           <label>Focus <input type="number" id="setFocus" min="1" max="90" value="25"></label>
           <label>Break <input type="number" id="setShort" min="1" max="30" value="5"></label>
+          <label class="soundtog">🔔 เสียง <input type="checkbox" id="setSound" checked></label>
         </div>
         <div class="fstats">
           <div class="ttl">Focus minutes · last 7 days · <span id="weekTotal">0 min</span></div>
@@ -916,7 +918,8 @@ function taskDetail(t){const projOpts=`<option value="">— ไม่มีโ�
     if(photoData!==undefined){putPhoto(t.id,photoData);t.photo=true}saveTasks();closeSheet();renderTasks();toast("บันทึกแล้ว ✓")}}
 
 /* ===== POMODORO + STATS ===== */
-const P={mode:"focus",running:false,remain:1500,total:1500,timer:null,dur:store.get("sd_dur",{focus:25,short:5,long:15})};
+const P={mode:"focus",running:false,remain:1500,total:1500,timer:null,endAt:0,dur:store.get("sd_dur",{focus:25,short:5,long:15})};
+let soundOn=store.get("sd_sound",true);
 let fhist=store.get("sd_fhist",{});
 let focusTarget=null;                 // {taskId,projId,title}
 let pfocus=store.get("sd_pfocus",{}); // {projId:{dateKey:minutes}}
@@ -955,26 +958,46 @@ function renderPFocus(){const card=$("#pfocusCard"),listEl=$("#pfocusList");
     <span class="nm">${esc(r.name)}</span><span class="track"><i style="width:${Math.max(6,r.min/mx*100)}%;background:${r.color}"></i></span>
     <span class="amt">${r.min}m</span></div>`).join("")}
 function todayFocus(){return fhist[todayKey()]||{sessions:0,min:0}}
-function setMode(m){P.mode=m;stopTimer();P.total=P.dur[m]*60;P.remain=P.total;
+function persistTimer(){try{if(P.running&&P.endAt)store.set("sd_timer",{mode:P.mode,endAt:P.endAt,total:P.total});else store.set("sd_timer",null)}catch(e){}}
+function setMode(m){P.mode=m;clearInterval(P.timer);P.timer=null;P.running=false;P.endAt=0;P.total=P.dur[m]*60;P.remain=P.total;persistTimer();
   $$("#modeTabs button").forEach(b=>b.classList.toggle("on",b.dataset.m===m));
   $("#ring").classList.toggle("brk",m!=="focus");$("#timeLbl").textContent=m==="focus"?"Focus":m==="short"?"Short break":"Long break";paint()}
 $("#modeTabs").onclick=e=>{const b=e.target.closest("button");if(b)setMode(b.dataset.m)};
-function paint(){const mm=String(Math.floor(P.remain/60)).padStart(2,"0"),ss=String(P.remain%60).padStart(2,"0");
-  $("#timeDisp").textContent=`${mm}:${ss}`;$("#ringFg").style.strokeDashoffset=(276.46*(1-(P.total?P.remain/P.total:0))).toFixed(2);
-  $("#startBtn").textContent=P.running?"Pause":"Start";$("#startBtn").classList.toggle("run",P.running)}
-function tick(){P.remain--;if(P.remain<=0){finishSession();return}paint()}
-function finishSession(){stopTimer();
-  if(P.mode==="focus"){const k=todayKey();fhist[k]=fhist[k]||{sessions:0,min:0};fhist[k].sessions++;fhist[k].min+=P.dur.focus;
+function paint(){const r=Math.max(0,P.remain);const mm=String(Math.floor(r/60)).padStart(2,"0"),ss=String(r%60).padStart(2,"0");
+  $("#timeDisp").textContent=`${mm}:${ss}`;$("#ringFg").style.strokeDashoffset=(276.46*(1-(P.total?r/P.total:0))).toFixed(2);
+  $("#startBtn").textContent=P.running?"Pause":"Start";$("#startBtn").classList.toggle("run",P.running);
+  try{document.title=P.running?`${mm}:${ss} · StudyDesk`:"StudyDesk"}catch(e){}}
+function tick(){if(P.running&&P.endAt){P.remain=Math.max(0,Math.round((P.endAt-Date.now())/1000));if(P.remain<=0){finishSession();return}}paint()}
+function finishSession(){clearInterval(P.timer);P.timer=null;P.running=false;P.endAt=0;persistTimer();
+  const wasFocus=(P.mode==="focus");
+  if(wasFocus){const k=todayKey();fhist[k]=fhist[k]||{sessions:0,min:0};fhist[k].sessions++;fhist[k].min+=P.dur.focus;
     store.set("sd_fhist",fhist);if(focusTarget)addProjFocus(focusTarget.projId,P.dur.focus);renderStats();renderBars();renderPFocus()}
-  try{navigator.vibrate&&navigator.vibrate([120,60,120])}catch(e){}beep();P.remain=0;paint();
-  setMode(P.mode==="focus"?(todayFocus().sessions%4===0?"long":"short"):"focus")}
-function startTimer(){P.running=true;P.timer=setInterval(tick,1000);paint()}
-function stopTimer(){P.running=false;clearInterval(P.timer);P.timer=null;paint()}
+  if(soundOn){try{navigator.vibrate&&navigator.vibrate([120,60,120])}catch(e){}beep()}
+  notify(wasFocus?"⏰ หมดเวลาโฟกัสแล้ว! พักหน่อยนะ 🎉":"⏰ หมดเวลาพัก — โฟกัสกันต่อ!");
+  P.remain=0;paint();
+  setMode(wasFocus?(todayFocus().sessions%4===0?"long":"short"):"focus")}
+function startTimer(){P.running=true;P.endAt=Date.now()+Math.max(1,P.remain)*1000;clearInterval(P.timer);P.timer=setInterval(tick,300);persistTimer();requestNotify();paint()}
+function stopTimer(){if(P.running&&P.endAt)P.remain=Math.max(0,Math.round((P.endAt-Date.now())/1000));P.running=false;clearInterval(P.timer);P.timer=null;P.endAt=0;persistTimer();paint()}
 $("#startBtn").onclick=()=>{P.running?stopTimer():(P.remain<=0&&(P.remain=P.total),startTimer())};
 $("#resetBtn").onclick=()=>{stopTimer();P.remain=P.total;paint()};
+/* keep the timer accurate across app-background / screen-off, and notify on finish */
+function requestNotify(){try{if(soundOn&&"Notification"in window&&Notification.permission==="default")Notification.requestPermission()}catch(e){}}
+function notify(msg){try{if("Notification"in window&&Notification.permission==="granted"&&document.hidden)new Notification("StudyDesk",{body:msg})}catch(e){}toast(msg)}
+document.addEventListener("visibilitychange",()=>{if(!document.hidden&&P.running)tick()});
+window.addEventListener("focus",()=>{if(P.running)tick()});
+function initTimer(){let s;try{s=store.get("sd_timer")}catch(e){}
+  if(s&&s.endAt){P.mode=s.mode;P.total=s.total||P.dur[s.mode]*60;
+    $$("#modeTabs button").forEach(b=>b.classList.toggle("on",b.dataset.m===s.mode));
+    $("#ring").classList.toggle("brk",s.mode!=="focus");$("#timeLbl").textContent=s.mode==="focus"?"Focus":s.mode==="short"?"Short break":"Long break";
+    const rem=Math.round((s.endAt-Date.now())/1000);
+    if(rem>0){P.remain=rem;P.endAt=s.endAt;P.running=true;P.timer=setInterval(tick,300);paint();return}
+    P.remain=0;store.set("sd_timer",null);finishSession();return}
+  setMode("focus")}
 $("#setFocus").value=P.dur.focus;$("#setShort").value=P.dur.short;
 $("#setFocus").onchange=e=>{P.dur.focus=clamp(+e.target.value,1,90);store.set("sd_dur",P.dur);if(P.mode==="focus"&&!P.running)setMode("focus")};
 $("#setShort").onchange=e=>{P.dur.short=clamp(+e.target.value,1,30);store.set("sd_dur",P.dur);if(P.mode==="short"&&!P.running)setMode("short")};
+$("#setSound").checked=soundOn;
+$("#setSound").onchange=e=>{soundOn=e.target.checked;store.set("sd_sound",soundOn);if(soundOn){requestNotify();beep()}toast(soundOn?"เปิดเสียงแจ้งเตือน 🔔":"ปิดเสียงแจ้งเตือน 🔕")};
 function focusStreak(){let s=0;for(let i=0;i<400;i++){const key=dk(new Date(Date.now()-i*DAY));
   if(fhist[key]&&fhist[key].min>0)s++;else if(i===0)continue;else break}return s}
 function renderStats(){const tf=todayFocus();$("#stSessions").textContent=tf.sessions;$("#stMin").textContent=tf.min;$("#stStreak").textContent=focusStreak()}
@@ -1241,7 +1264,7 @@ $("#sortTog").classList.toggle("on",manualSort);
   tasks.forEach(t=>{if(!t.done&&t.due&&t.due<tk){t.origDue=t.origDue||t.due;t.carried=true;t.due=tk;changed=true}
     else if(t.done&&t.carried){delete t.carried}});
   if(changed)saveTasks();})();
-renderExams();renderProjChips();renderDayLabel();renderTasks();renderStats();renderBars();setMode("focus");renderMoney();
+renderExams();renderProjChips();renderDayLabel();renderTasks();renderStats();renderBars();initTimer();renderMoney();
 
 /* ===== account · backup · sync ===== */
 function collectData(){const d={};for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k&&k.indexOf("sd_")===0)d[k]=localStorage.getItem(k)}return d}

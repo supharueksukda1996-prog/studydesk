@@ -402,6 +402,46 @@ a{color:inherit}
 .qcard .qempty{font-size:.74rem;color:var(--ink-3)}
 .toast{position:fixed;left:50%;bottom:96px;transform:translateX(-50%) translateY(20px);background:var(--ink);color:var(--surface);padding:11px 20px;border-radius:12px;font-size:.86rem;font-weight:600;box-shadow:var(--shadow-lift);opacity:0;pointer-events:none;transition:.25s;z-index:80;max-width:88%;text-align:center}
 .toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* ===== customizable blocks (จัดหน้า) ===== */
+/* default: wrapper is invisible to layout -> UI identical to before */
+.lb{display:contents}
+body.lb-editing .lb{display:block;background:var(--surface);border:1px solid var(--line-2);border-radius:14px;
+  padding:10px 11px;margin:0 0 12px;box-shadow:var(--shadow);position:relative}
+body.lb-editing .lb[data-core="1"]{border-color:color-mix(in srgb,var(--gold) 45%,var(--line))}
+body.lb-editing .view{padding-bottom:88px}
+body.lb-editing .lb.dragging{opacity:.45}
+body.lb-editing .lb.lb-over{outline:2px dashed var(--gold);outline-offset:2px}
+.lb-ctl{display:flex;align-items:center;gap:6px;margin:0 0 10px;padding:0 0 8px;border-bottom:1px dashed var(--line-2)}
+.lb-grip{cursor:grab;color:var(--ink-3);font-size:1.1rem;touch-action:none;padding:2px 6px;user-select:none}
+.lb-nm{flex:1;font-size:.82rem;font-weight:700;color:var(--ink-2)}
+.lb-ctl button{border:1px solid var(--line-2);background:var(--surface-2);color:var(--ink-2);border-radius:8px;width:30px;height:30px;font-size:.85rem;flex:none}
+.lb-ctl button:disabled{opacity:.32}
+.lb-ctl .lb-hide{color:var(--rose)}
+.lb-lock{font-size:.64rem;font-weight:700;color:var(--gold-ink);background:var(--gold-soft);padding:3px 9px;border-radius:999px;white-space:nowrap}
+.lb-tray{background:var(--surface-2);border:1px dashed var(--line-2);border-radius:14px;padding:12px 13px;margin:0 0 12px}
+.lb-tray h4{margin:0 0 3px;font-size:.82rem;font-weight:700;color:var(--ink-2)}
+.lb-tray .sub{margin:0 0 10px;font-size:.72rem;color:var(--ink-3)}
+.lb-chip{border:1px solid var(--line-2);background:var(--surface);color:var(--ink-2);border-radius:999px;padding:8px 13px;font-size:.8rem;font-weight:600;margin:0 7px 7px 0;box-shadow:var(--shadow)}
+.lb-chip .p{color:var(--green);font-weight:800;margin-left:5px}
+.lb-tray .empty{font-size:.76rem;color:var(--ink-3)}
+#lbEditBar{position:absolute;left:0;right:0;bottom:0;display:none;gap:8px;align-items:center;
+  padding:10px 14px calc(10px + env(safe-area-inset-bottom));background:var(--surface);border-top:1px solid var(--line);z-index:60}
+body.lb-editing #lbEditBar{display:flex}
+body.lb-editing .nav{display:none}
+#lbEditBar .info{flex:1;font-size:.82rem;color:var(--ink-2);font-weight:700}
+#lbEditBar button{border:none;border-radius:10px;padding:10px 13px;font-weight:700;font-size:.82rem}
+#lbEditBar .nav-cfg{background:var(--surface-2);color:var(--ink-2);border:1px solid var(--line-2)}
+#lbEditBar .done{background:var(--gold);color:#fff}
+/* nav config rows (in sheet) */
+.navrow{display:flex;align-items:center;gap:10px;padding:9px 11px;border:1px solid var(--line);border-radius:12px;margin-bottom:8px;background:var(--surface)}
+.navrow .ic{font-size:1.05rem;width:22px;text-align:center}
+.navrow .nm{flex:1;font-size:.88rem;font-weight:600}
+.navrow .tag{font-size:.64rem;font-weight:700;padding:3px 9px;border-radius:999px;background:var(--gold-soft);color:var(--gold-ink)}
+.navrow .tag.off{background:var(--surface-2);color:var(--ink-3)}
+.navrow .mv{border:1px solid var(--line-2);background:var(--surface-2);color:var(--ink-2);width:30px;height:30px;border-radius:8px;font-size:.9rem;flex:none}
+.navrow .mv:disabled{opacity:.32}
+.grouplbl{font-size:.66rem;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);font-weight:700;margin:14px 2px 7px}
 </style>
 
 </head>
@@ -417,111 +457,143 @@ a{color:inherit}
   <div class="scroll">
     <!-- TODAY -->
     <section class="view on" id="v-today">
-      <div class="eyebrow">Exams &amp; deadlines</div>
-      <div class="exam-strip" id="examStrip"></div>
-      <div class="eyebrow">Projects <select id="projTypeFilter" class="typesel"></select></div>
-      <div class="chips" id="projChips"></div>
-      <div class="daybar">
-        <div class="nav2">
-          <button class="arrow" id="dayPrev" aria-label="Previous day">‹</button>
-          <button class="dlabel" id="dayLabel" aria-label="Pick a date">Today ▾</button>
-          <button class="arrow" id="dayNext" aria-label="Next day">›</button>
+      <div class="lb" data-block="exams" data-core="0">
+        <div class="eyebrow">Exams &amp; deadlines</div>
+        <div class="exam-strip" id="examStrip"></div>
+      </div>
+      <div class="lb" data-block="projects" data-core="0">
+        <div class="eyebrow">Projects <select id="projTypeFilter" class="typesel"></select></div>
+        <div class="chips" id="projChips"></div>
+      </div>
+      <div class="lb" data-block="tasks" data-core="1">
+        <div class="daybar">
+          <div class="nav2">
+            <button class="arrow" id="dayPrev" aria-label="Previous day">‹</button>
+            <button class="dlabel" id="dayLabel" aria-label="Pick a date">Today ▾</button>
+            <button class="arrow" id="dayNext" aria-label="Next day">›</button>
+          </div>
+          <button class="today-btn" id="dayToday">Today</button>
+          <button class="viewtog" id="sortTog" aria-label="จัดลำดับเอง" title="ลากจัดลำดับเอง">↕</button>
+          <button class="viewtog" id="matrixTog" aria-label="Matrix view">⊞</button>
         </div>
-        <button class="today-btn" id="dayToday">Today</button>
-        <button class="viewtog" id="sortTog" aria-label="จัดลำดับเอง" title="ลากจัดลำดับเอง">↕</button>
-        <button class="viewtog" id="matrixTog" aria-label="Matrix view">⊞</button>
+        <div class="addrow">
+          <input id="taskInput" placeholder="Add a task…" maxlength="120" autocomplete="off">
+          <button class="iadd" id="taskAdd" aria-label="Add task">+</button>
+        </div>
+        <div class="quadpick" id="quadPick">
+          <button data-q="q1">🔴 สำคัญ+ด่วน</button>
+          <button data-q="q2" class="sel">🟢 สำคัญ</button>
+          <button data-q="q3">🟡 เร่งด่วน</button>
+          <button data-q="q4">⚪ ทีหลัง</button>
+        </div>
+        <div id="shiftArea"></div>
+        <div id="taskArea"></div>
       </div>
-      <div class="addrow">
-        <input id="taskInput" placeholder="Add a task…" maxlength="120" autocomplete="off">
-        <button class="iadd" id="taskAdd" aria-label="Add task">+</button>
+      <div class="lb" data-block="todayhabits" data-core="0">
+        <div class="eyebrow" id="thHd" hidden>นิสัยวันนี้ <span class="count" id="thCount"></span></div>
+        <div class="todayhabits" id="todayHabits"></div>
       </div>
-      <div class="quadpick" id="quadPick">
-        <button data-q="q1">🔴 สำคัญ+ด่วน</button>
-        <button data-q="q2" class="sel">🟢 สำคัญ</button>
-        <button data-q="q3">🟡 เร่งด่วน</button>
-        <button data-q="q4">⚪ ทีหลัง</button>
-      </div>
-      <div id="shiftArea"></div>
-      <div id="taskArea"></div>
-      <div class="eyebrow" id="thHd" hidden>นิสัยวันนี้ <span class="count" id="thCount"></span></div>
-      <div class="todayhabits" id="todayHabits"></div>
     </section>
 
     <!-- FOCUS -->
     <section class="view" id="v-focus">
       <div class="focuswrap">
-        <div class="ftarget" id="focusTargetBar" hidden></div>
-        <div class="mode-tabs" id="modeTabs">
-          <button data-m="focus" class="on">Focus</button>
-          <button data-m="short">Short break</button>
-          <button data-m="long">Long break</button>
+        <div class="lb" data-block="timer" data-core="1">
+          <div class="ftarget" id="focusTargetBar" hidden></div>
+          <div class="mode-tabs" id="modeTabs">
+            <button data-m="focus" class="on">Focus</button>
+            <button data-m="short">Short break</button>
+            <button data-m="long">Long break</button>
+          </div>
+          <div class="ring" id="ring">
+            <svg viewBox="0 0 100 100"><circle class="bg" cx="50" cy="50" r="44"></circle>
+              <circle class="fg" id="ringFg" cx="50" cy="50" r="44" stroke-dasharray="276.46" stroke-dashoffset="0"></circle></svg>
+            <div class="inner"><div class="time" id="timeDisp">25:00</div><div class="lbl" id="timeLbl">Focus</div></div>
+          </div>
+          <div class="controls"><button class="bigbtn" id="startBtn">Start</button><button class="ghost" id="resetBtn" aria-label="Reset">↺</button></div>
+          <div class="stats">
+            <div class="stat"><div class="n" id="stSessions">0</div><div class="l">Sessions today</div></div>
+            <div class="stat b"><div class="n" id="stMin">0</div><div class="l">Minutes today</div></div>
+            <div class="stat c"><div class="n" id="stStreak">0</div><div class="l">Day streak</div></div>
+          </div>
+          <div class="setts">
+            <label>Focus <input type="number" id="setFocus" min="1" max="90" value="25"></label>
+            <label>Break <input type="number" id="setShort" min="1" max="30" value="5"></label>
+            <label class="soundtog">🔔 เสียง <input type="checkbox" id="setSound" checked></label>
+          </div>
         </div>
-        <div class="ring" id="ring">
-          <svg viewBox="0 0 100 100"><circle class="bg" cx="50" cy="50" r="44"></circle>
-            <circle class="fg" id="ringFg" cx="50" cy="50" r="44" stroke-dasharray="276.46" stroke-dashoffset="0"></circle></svg>
-          <div class="inner"><div class="time" id="timeDisp">25:00</div><div class="lbl" id="timeLbl">Focus</div></div>
+        <div class="lb" data-block="week" data-core="0">
+          <div class="fstats">
+            <div class="ttl">Focus minutes · last 7 days · <span id="weekTotal">0 min</span></div>
+            <div class="barchart" id="barChart"></div>
+          </div>
         </div>
-        <div class="controls"><button class="bigbtn" id="startBtn">Start</button><button class="ghost" id="resetBtn" aria-label="Reset">↺</button></div>
-        <div class="stats">
-          <div class="stat"><div class="n" id="stSessions">0</div><div class="l">Sessions today</div></div>
-          <div class="stat b"><div class="n" id="stMin">0</div><div class="l">Minutes today</div></div>
-          <div class="stat c"><div class="n" id="stStreak">0</div><div class="l">Day streak</div></div>
-        </div>
-        <div class="setts">
-          <label>Focus <input type="number" id="setFocus" min="1" max="90" value="25"></label>
-          <label>Break <input type="number" id="setShort" min="1" max="30" value="5"></label>
-          <label class="soundtog">🔔 เสียง <input type="checkbox" id="setSound" checked></label>
-        </div>
-        <div class="fstats">
-          <div class="ttl">Focus minutes · last 7 days · <span id="weekTotal">0 min</span></div>
-          <div class="barchart" id="barChart"></div>
-        </div>
-        <div class="fstats" id="pfocusCard" hidden>
-          <div class="ttl">โฟกัสตามโปรเจกต์ · 7 วันล่าสุด</div>
-          <div id="pfocusList"></div>
+        <div class="lb" data-block="pfocus" data-core="0">
+          <div class="fstats" id="pfocusCard" hidden>
+            <div class="ttl">โฟกัสตามโปรเจกต์ · 7 วันล่าสุด</div>
+            <div id="pfocusList"></div>
+          </div>
         </div>
       </div>
     </section>
 
     <!-- HABITS -->
     <section class="view" id="v-habits">
-      <div class="eyebrow">Habits · นิสัยที่กำลังสร้าง <button class="linkbtn" id="addHabit">＋ New</button></div>
-      <div class="habitlist" id="habitList"></div>
-      <div class="eyebrow" id="achHd" hidden>🏆 ความสำเร็จ · Achievements</div>
-      <div class="achlist" id="achList"></div>
+      <div class="lb" data-block="habits" data-core="1">
+        <div class="eyebrow">Habits · นิสัยที่กำลังสร้าง <button class="linkbtn" id="addHabit">＋ New</button></div>
+        <div class="habitlist" id="habitList"></div>
+      </div>
+      <div class="lb" data-block="achievements" data-core="0">
+        <div class="eyebrow" id="achHd" hidden>🏆 ความสำเร็จ · Achievements</div>
+        <div class="achlist" id="achList"></div>
+      </div>
     </section>
 
     <!-- MONEY -->
     <section class="view" id="v-money">
-      <div class="mhead">
-        <div class="mnav"><button id="moPrev" aria-label="Prev month">‹</button><span class="mo" id="moLabel">—</span><button id="moNext" aria-label="Next month">›</button></div>
-        <div style="display:flex;gap:8px"><button class="linkbtn" id="moCfg">⚙ ตั้งค่า</button><button class="linkbtn" id="copySheet">Copy</button></div>
-      </div>
-      <div class="budgetcard" id="budgetCard"></div>
-      <div class="balcard">
-        <div class="bal-l">คงเหลือเดือนนี้ · Net this month</div>
-        <div class="bal" id="balNet">฿0</div>
-        <div class="io">
-          <div class="box in"><div class="k">รายรับ · Income</div><div class="v" id="ioIn">฿0</div></div>
-          <div class="box out"><div class="k">รายจ่าย · Expense</div><div class="v" id="ioOut">฿0</div></div>
-        </div>
-        <div class="addbtns">
-          <button class="out" id="addOut">− รายจ่าย</button>
-          <button class="in" id="addIn">+ รายรับ</button>
-          <button class="scb" id="slipBtn" aria-label="อัปโหลดสลิป">📷 สลิป</button>
+      <div class="lb" data-block="month" data-core="1">
+        <div class="mhead">
+          <div class="mnav"><button id="moPrev" aria-label="Prev month">‹</button><span class="mo" id="moLabel">—</span><button id="moNext" aria-label="Next month">›</button></div>
+          <div style="display:flex;gap:8px"><button class="linkbtn" id="moCfg">⚙ ตั้งค่า</button><button class="linkbtn" id="copySheet">Copy</button></div>
         </div>
       </div>
-      <div class="eyebrow">Dashboard · ภาพรวมการใช้เงิน</div>
-      <div class="insightcard" id="insightCard" hidden></div>
-      <div class="dashgrid" id="dashGrid"></div>
-      <div class="dashcard" id="trendCard">
-        <div class="dctl">รายจ่ายรายวัน · Daily spend (14 วันล่าสุด)</div>
-        <div class="barchart" id="spendChart"></div>
+      <div class="lb" data-block="budget" data-core="0">
+        <div class="budgetcard" id="budgetCard"></div>
       </div>
-      <div class="eyebrow">รายจ่ายตามหมวด · By category</div>
-      <div class="catbars" id="catBars"></div>
-      <div class="eyebrow">รายการล่าสุด · Transactions <span class="count" id="txCount"></span></div>
-      <ul class="txlist" id="txList"></ul>
+      <div class="lb" data-block="balance" data-core="1">
+        <div class="balcard">
+          <div class="bal-l">คงเหลือเดือนนี้ · Net this month</div>
+          <div class="bal" id="balNet">฿0</div>
+          <div class="io">
+            <div class="box in"><div class="k">รายรับ · Income</div><div class="v" id="ioIn">฿0</div></div>
+            <div class="box out"><div class="k">รายจ่าย · Expense</div><div class="v" id="ioOut">฿0</div></div>
+          </div>
+          <div class="addbtns">
+            <button class="out" id="addOut">− รายจ่าย</button>
+            <button class="in" id="addIn">+ รายรับ</button>
+            <button class="scb" id="slipBtn" aria-label="อัปโหลดสลิป">📷 สลิป</button>
+          </div>
+        </div>
+      </div>
+      <div class="lb" data-block="dashboard" data-core="0">
+        <div class="eyebrow">Dashboard · ภาพรวมการใช้เงิน</div>
+        <div class="insightcard" id="insightCard" hidden></div>
+        <div class="dashgrid" id="dashGrid"></div>
+      </div>
+      <div class="lb" data-block="trend" data-core="0">
+        <div class="dashcard" id="trendCard">
+          <div class="dctl">รายจ่ายรายวัน · Daily spend (14 วันล่าสุด)</div>
+          <div class="barchart" id="spendChart"></div>
+        </div>
+      </div>
+      <div class="lb" data-block="categories" data-core="0">
+        <div class="eyebrow">รายจ่ายตามหมวด · By category</div>
+        <div class="catbars" id="catBars"></div>
+      </div>
+      <div class="lb" data-block="transactions" data-core="0">
+        <div class="eyebrow">รายการล่าสุด · Transactions <span class="count" id="txCount"></span></div>
+        <ul class="txlist" id="txList"></ul>
+      </div>
     </section>
   </div>
   <nav class="nav" id="nav">
@@ -530,6 +602,11 @@ a{color:inherit}
     <button data-v="habits"><svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>Habits</button>
     <button data-v="money"><svg viewBox="0 0 24 24"><path d="M3 7h18v12H3zM3 10h18M7 15h4"/></svg>Money</button>
   </nav>
+  <div id="lbEditBar">
+    <span class="info">🧩 จัดบล็อกหน้านี้</span>
+    <button class="nav-cfg" id="lbNavCfg">📱 แถบล่าง</button>
+    <button class="done" id="lbDone">เสร็จ</button>
+  </div>
 </div>
 <div class="modal" id="modal"><div class="sheet" id="sheet"></div></div>
 <div class="toast" id="toast"></div>
@@ -640,9 +717,126 @@ function makeSortable(container,itemSel,handleSel,onReorder){
   $("#theme").onclick=()=>{const cur=document.documentElement.getAttribute("data-theme");
     const isDark=cur?cur==="dark":matchMedia("(prefers-color-scheme:dark)").matches;const next=isDark?"light":"dark";
     document.documentElement.setAttribute("data-theme",next);store.set("sd_theme",next)}})();
-$$("#nav button").forEach(b=>b.onclick=()=>{$$("#nav button").forEach(x=>x.classList.remove("on"));b.classList.add("on");
-  $$(".view").forEach(v=>v.classList.remove("on"));$("#v-"+b.dataset.v).classList.add("on");$(".scroll").scrollTop=0;
-  if(b.dataset.v==="today")renderTasks();if(b.dataset.v==="focus"){renderBars();renderFocusTarget();renderPFocus()}if(b.dataset.v==="habits")renderHabits()});
+/* ===== customizable layout: blocks-per-tab + bottom nav ===== */
+const LB_DEFS={
+  today:[{id:"exams",nm:"สอบ & เดดไลน์",ic:"📌"},{id:"projects",nm:"โปรเจกต์",ic:"🗂️"},
+    {id:"tasks",nm:"งานวันนี้ (To-do)",ic:"📋",core:1},{id:"todayhabits",nm:"นิสัยวันนี้",ic:"✅"}],
+  focus:[{id:"timer",nm:"ตัวจับเวลา",ic:"⏱️",core:1},{id:"week",nm:"สถิติ 7 วัน",ic:"📊"},
+    {id:"pfocus",nm:"โฟกัสตามโปรเจกต์",ic:"🎯"}],
+  habits:[{id:"habits",nm:"รายการนิสัย",ic:"✅",core:1},{id:"achievements",nm:"ความสำเร็จ",ic:"🏆"}],
+  money:[{id:"month",nm:"เลือกเดือน",ic:"📅",core:1},{id:"budget",nm:"งบประมาณ",ic:"🎯"},
+    {id:"balance",nm:"รายรับ-รายจ่าย",ic:"💰",core:1},{id:"dashboard",nm:"แดชบอร์ด",ic:"📊"},
+    {id:"trend",nm:"กราฟรายวัน",ic:"📈"},{id:"categories",nm:"ตามหมวด",ic:"🏷️"},
+    {id:"transactions",nm:"รายการล่าสุด",ic:"🧾"}]
+};
+const LB_CONT={today:"#v-today",focus:"#v-focus .focuswrap",habits:"#v-habits",money:"#v-money"};
+const lbDef=(view,id)=>LB_DEFS[view].find(b=>b.id===id)||{};
+/* merge saved layout with defs so blocks added in future updates auto-appear (never lose data) */
+function lbLayout(view){const def=LB_DEFS[view],saved=(store.get("sd_layout",{})||{})[view];
+  const out=Array.isArray(saved)?saved.filter(s=>def.some(b=>b.id===s.id)).map(s=>({id:s.id,vis:s.vis!==false})):[];
+  def.forEach(b=>{if(!out.some(s=>s.id===b.id))out.push({id:b.id,vis:true})});return out}
+function saveLb(view,arr){const all=store.get("sd_layout",{})||{};all[view]=arr;store.set("sd_layout",all)}
+function applyLayout(view){const cont=$(LB_CONT[view]);if(!cont)return;
+  lbLayout(view).forEach(item=>{const el=cont.querySelector('.lb[data-block="'+item.id+'"]');if(!el)return;
+    cont.appendChild(el);el.hidden=!item.vis&&!lbDef(view,item.id).core})}
+function applyAllLayouts(){Object.keys(LB_DEFS).forEach(applyLayout)}
+
+/* ---- bottom nav (order + hide-to-More) ---- */
+const TAB_DEFS={
+  today:{nm:"Today",svg:'<path d="M4 7h16M4 12h16M4 17h10"/>'},
+  focus:{nm:"Focus",svg:'<circle cx="12" cy="13" r="8"/><path d="M12 13V9M9 3h6"/>'},
+  habits:{nm:"Habits",svg:'<path d="M20 6L9 17l-5-5"/>'},
+  money:{nm:"Money",svg:'<path d="M3 7h18v12H3zM3 10h18M7 15h4"/>'}
+};
+const TAB_IDS=["today","focus","habits","money"];
+function navCfg(){const c=store.get("sd_nav",{})||{};
+  let order=(c.order||[]).filter(v=>TAB_IDS.includes(v));TAB_IDS.forEach(v=>{if(!order.includes(v))order.push(v)});
+  const hidden=(c.hidden||[]).filter(v=>TAB_IDS.includes(v));return{order,hidden}}
+function saveNav(cfg){store.set("sd_nav",cfg)}
+function curView(){const v=$(".view.on");return v?v.id.replace("v-",""):"today"}
+function switchTab(v){if(!TAB_IDS.includes(v))return;
+  $$(".view").forEach(x=>x.classList.remove("on"));const el=$("#v-"+v);if(el)el.classList.add("on");
+  $(".scroll").scrollTop=0;renderNav();
+  if(v==="today")renderTasks();if(v==="focus"){renderBars();renderFocusTarget();renderPFocus()}if(v==="habits")renderHabits();
+  if(lbEditing)refreshEdit()}
+function renderNav(){const{order,hidden}=navCfg(),cur=curView(),nav=$("#nav");
+  const bar=order.filter(v=>!hidden.includes(v));
+  let h=bar.map(v=>`<button data-v="${v}" class="${v===cur?"on":""}"><svg viewBox="0 0 24 24">${TAB_DEFS[v].svg}</svg>${TAB_DEFS[v].nm}</button>`).join("");
+  if(hidden.length)h+=`<button data-more="1" class="${hidden.includes(cur)?"on":""}"><svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg>เพิ่มเติม</button>`;
+  nav.innerHTML=h;
+  nav.querySelectorAll("[data-v]").forEach(b=>b.onclick=()=>switchTab(b.dataset.v));
+  const mb=nav.querySelector("[data-more]");if(mb)mb.onclick=openMore}
+function openMore(){const{hidden}=navCfg();
+  openSheet(`<h3>เพิ่มเติม</h3>${hidden.map(v=>`<button class="photobtn" data-go="${v}">${TAB_DEFS[v].nm}</button>`).join("")}
+    <button class="photobtn" id="mNavCfg" style="margin-top:6px">📱 จัดแถบล่าง</button>
+    <div class="row2" style="margin-top:12px"><button class="cancel" id="mCancel">ปิด</button></div>`);
+  $("#mCancel").onclick=closeSheet;$("#mNavCfg").onclick=()=>{closeSheet();openNavCfg()};
+  $$("#sheet [data-go]").forEach(b=>b.onclick=()=>{closeSheet();switchTab(b.dataset.go)})}
+function openNavCfg(){const cfg=navCfg();
+  const row=v=>{const inBar=!cfg.hidden.includes(v),i=cfg.order.indexOf(v);
+    return `<div class="navrow" data-v="${v}"><span class="ic">${TAB_DEFS[v].ic||"•"}</span><span class="nm">${TAB_DEFS[v].nm}</span>
+      <span class="tag ${inBar?"":"off"}">${inBar?"ในแถบ":"ซ่อน"}</span>
+      <button class="mv" data-up ${i===0?"disabled":""}>↑</button><button class="mv" data-down ${i===cfg.order.length-1?"disabled":""}>↓</button>
+      <button class="mv" data-tog>${inBar?"✕":"＋"}</button></div>`};
+  openSheet(`<h3>จัดแถบล่าง</h3><div class="hintline">เรียงลำดับปุ่ม และเลือกว่าปุ่มไหนอยู่ในแถบ ปุ่มที่ซ่อนจะไปอยู่ในเมนู ••• เพิ่มเติม</div>
+    <div id="navRows" style="margin-top:12px">${cfg.order.map(row).join("")}</div>
+    <div class="row2" style="margin-top:12px"><button class="save" id="mDone">เสร็จ</button></div>`);
+  const rerun=()=>{closeSheet();openNavCfg()};
+  $("#mDone").onclick=closeSheet;
+  $$("#navRows .navrow").forEach(r=>{const v=r.dataset.v;
+    r.querySelector("[data-up]").onclick=()=>{const c=navCfg(),i=c.order.indexOf(v);if(i>0){c.order.splice(i,1);c.order.splice(i-1,0,v);saveNav(c);renderNav();rerun()}};
+    r.querySelector("[data-down]").onclick=()=>{const c=navCfg(),i=c.order.indexOf(v);if(i<c.order.length-1){c.order.splice(i,1);c.order.splice(i+1,0,v);saveNav(c);renderNav();rerun()}};
+    r.querySelector("[data-tog]").onclick=()=>{const c=navCfg();
+      if(c.hidden.includes(v))c.hidden=c.hidden.filter(x=>x!==v);
+      else{if(c.order.filter(x=>!c.hidden.includes(x)).length<=1){toast("ต้องเหลือปุ่มในแถบอย่างน้อย 1");return}c.hidden.push(v)}
+      saveNav(c);renderNav();rerun()}})}
+
+/* ---- edit mode (จัดบล็อกในหน้า) ---- */
+let lbEditing=false;
+function enterEdit(){lbEditing=true;document.body.classList.add("lb-editing");refreshEdit()}
+function exitEdit(){lbEditing=false;document.body.classList.remove("lb-editing");clearEdit()}
+function clearEdit(){$$(".lb-ctl").forEach(e=>e.remove());$$(".lb-tray").forEach(e=>e.remove())}
+function refreshEdit(){clearEdit();const view=curView();applyLayout(view);
+  const cont=$(LB_CONT[view]),lay=lbLayout(view);
+  const vis=lay.filter(i=>i.vis||lbDef(view,i.id).core);
+  vis.forEach((item,idx)=>{const el=cont.querySelector('.lb[data-block="'+item.id+'"]');if(!el)return;
+    const d=lbDef(view,item.id),ctl=document.createElement("div");ctl.className="lb-ctl";
+    ctl.innerHTML=`<span class="lb-grip" title="ลากเพื่อสลับ">⠿</span><span class="lb-nm">${d.ic} ${d.nm}</span>
+      <button class="lb-up" ${idx===0?"disabled":""}>↑</button><button class="lb-down" ${idx===vis.length-1?"disabled":""}>↓</button>
+      ${d.core?'<span class="lb-lock">🔒 หลัก</span>':'<button class="lb-hide" title="ซ่อน">👁</button>'}`;
+    el.prepend(ctl);
+    ctl.querySelector(".lb-up").onclick=()=>moveBlock(view,item.id,-1);
+    ctl.querySelector(".lb-down").onclick=()=>moveBlock(view,item.id,1);
+    const hb=ctl.querySelector(".lb-hide");if(hb)hb.onclick=()=>setBlockVis(view,item.id,false)});
+  const hidden=lay.filter(i=>!i.vis&&!lbDef(view,i.id).core);
+  const tray=document.createElement("div");tray.className="lb-tray";
+  tray.innerHTML=`<h4>บล็อกที่ซ่อนอยู่</h4><div class="sub">แตะเพื่อเพิ่มเข้าหน้านี้</div>`+
+    (hidden.length?hidden.map(i=>{const d=lbDef(view,i.id);return `<button class="lb-chip" data-add="${i.id}">${d.ic} ${d.nm}<span class="p">＋</span></button>`}).join("")
+      :`<span class="empty">แสดงครบทุกบล็อกแล้ว 🎉</span>`);
+  cont.appendChild(tray);
+  tray.querySelectorAll("[data-add]").forEach(b=>b.onclick=()=>setBlockVis(view,b.dataset.add,true));
+  enableBlockDrag(cont,view)}
+function moveBlock(view,id,dir){const lay=lbLayout(view),i=lay.findIndex(x=>x.id===id),j=i+dir;
+  if(j<0||j>=lay.length)return;[lay[i],lay[j]]=[lay[j],lay[i]];saveLb(view,lay);refreshEdit()}
+function setBlockVis(view,id,vis){const lay=lbLayout(view),it=lay.find(x=>x.id===id);if(!it)return;
+  it.vis=vis;if(vis){lay.splice(lay.indexOf(it),1);lay.push(it)}saveLb(view,lay);refreshEdit()}
+function enableBlockDrag(cont,view){let drag=null;
+  cont.querySelectorAll(".lb-grip").forEach(g=>{g.onpointerdown=e=>{if(!lbEditing)return;e.preventDefault();
+    drag=g.closest(".lb");drag.classList.add("dragging");g.setPointerCapture(e.pointerId);
+    const move=ev=>{const items=[...cont.querySelectorAll(".lb:not([hidden])")];
+      items.forEach(x=>x.classList.remove("lb-over"));
+      const after=items.find(x=>{if(x===drag)return false;const r=x.getBoundingClientRect();return ev.clientY<r.top+r.height/2});
+      if(after)after.classList.add("lb-over")};
+    const up=()=>{document.removeEventListener("pointermove",move);document.removeEventListener("pointerup",up);
+      const over=cont.querySelector(".lb-over");
+      if(over&&over!==drag){const ids=[...cont.querySelectorAll(".lb:not([hidden])")].map(x=>x.dataset.block);
+        ids.splice(ids.indexOf(drag.dataset.block),1);ids.splice(ids.indexOf(over.dataset.block),0,drag.dataset.block);
+        const lay=lbLayout(view),hiddenItems=lay.filter(l=>!ids.includes(l.id));
+        const neworder=ids.map(id=>lay.find(l=>l.id===id)).concat(hiddenItems);saveLb(view,neworder)}
+      if(drag)drag.classList.remove("dragging");drag=null;refreshEdit()};
+    document.addEventListener("pointermove",move);document.addEventListener("pointerup",up)}})}
+$("#lbDone").onclick=exitEdit;
+$("#lbNavCfg").onclick=openNavCfg;
 
 function gcal(title,dateStr,details){const d=dateStr.replace(/-/g,"");
   const end=dk(new Date(new Date(dateStr+"T00:00").getTime()+DAY)).replace(/-/g,"");
@@ -753,7 +947,7 @@ function projectSheet(p){
     saveTasks();$("#psInput").value="";render();renderProjChips();renderTasks();$("#psInput").focus()};
   $("#psAdd").onclick=add;$("#psInput").addEventListener("keydown",e=>{if(e.key==="Enter")add()});
   $("#mCancel").onclick=closeSheet;
-  $("#psFilter").onclick=()=>{projFilter=p.id;closeSheet();renderProjChips();renderTasks();$$("#nav button").forEach(x=>x.classList.remove("on"));$('#nav button[data-v="today"]').classList.add("on");$$(".view").forEach(v=>v.classList.remove("on"));$("#v-today").classList.add("on")}}
+  $("#psFilter").onclick=()=>{projFilter=p.id;closeSheet();renderProjChips();switchTab("today")}}
 
 /* ===== TASKS ===== */
 $("#quadPick").onclick=e=>{const b=e.target.closest("button");if(!b)return;
@@ -926,9 +1120,7 @@ let pfocus=store.get("sd_pfocus",{}); // {projId:{dateKey:minutes}}
 function addProjFocus(proj,min){const k=proj||"__none";pfocus[k]=pfocus[k]||{};const d=todayKey();pfocus[k][d]=(pfocus[k][d]||0)+min;store.set("sd_pfocus",pfocus)}
 function projFocus7(proj){const o=pfocus[proj||"__none"]||{};let s=0;for(let i=0;i<7;i++)s+=o[dk(new Date(Date.now()-i*DAY))]||0;return s}
 function setFocusTarget(t){focusTarget={taskId:t.id,projId:t.proj||"",title:t.t};
-  $$("#nav button").forEach(x=>x.classList.remove("on"));$('#nav button[data-v="focus"]').classList.add("on");
-  $$(".view").forEach(v=>v.classList.remove("on"));$("#v-focus").classList.add("on");$(".scroll").scrollTop=0;
-  renderFocusTarget();renderBars();renderPFocus();
+  switchTab("focus");renderFocusTarget();renderBars();renderPFocus();
   setMode("focus");startTimer()} // เริ่มจับเวลาให้เลย
 function clearFocusTarget(){focusTarget=null;renderFocusTarget()}
 function renderFocusTarget(){const bar=$("#focusTargetBar");if(!focusTarget){bar.hidden=true;return}
@@ -1265,6 +1457,7 @@ $("#sortTog").classList.toggle("on",manualSort);
     else if(t.done&&t.carried){delete t.carried}});
   if(changed)saveTasks();})();
 renderExams();renderProjChips();renderDayLabel();renderTasks();renderStats();renderBars();initTimer();renderMoney();
+applyAllLayouts();renderNav();
 
 /* ===== account · backup · sync ===== */
 function collectData(){const d={};for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k&&k.indexOf("sd_")===0)d[k]=localStorage.getItem(k)}return d}
@@ -1289,6 +1482,8 @@ function openAccount(){const u=window.sdUser&&window.sdUser();const cfg=window.s
       :`<button class="save" id="acLogin" style="width:100%">เข้าสู่ระบบด้วย Gmail</button>
         <div class="hintline" style="margin-top:8px">ล็อกอินเพื่อ sync ข้อมูลข้าม iPhone ↔ คอมพิวเตอร์</div>`)
     :`<div class="hintline">ยังไม่ได้ตั้งค่า Firebase — ตอนนี้ข้อมูลเก็บในเครื่องนี้เท่านั้น (ดู README เพื่อเปิดล็อกอิน Gmail + sync)</div>`}</div>
+    <label class="fl" style="margin-top:12px">ปรับแต่งหน้าตา</label>
+    <button class="photobtn" id="acCustomize">🧩 จัดบล็อก &amp; แถบล่าง</button>
     <label class="fl" style="margin-top:12px">สำรอง / กู้คืนข้อมูล</label>
     <button class="photobtn" id="acExport">⬇️ ดาวน์โหลดไฟล์สำรอง (.json)</button>
     <button class="photobtn" id="acImport">⬆️ กู้คืนจากไฟล์</button>
@@ -1298,6 +1493,7 @@ function openAccount(){const u=window.sdUser&&window.sdUser();const cfg=window.s
       ${!isIOS()?`<button class="photobtn" id="acInstall">📲 ติดตั้งแอป</button>`:""}`:`<div class="synced" style="margin-top:12px">✅ กำลังใช้งานแบบติดตั้งแล้ว</div>`}
     <div class="row2" style="margin-top:14px"><button class="cancel" id="mCancel">ปิด</button></div>`);
   $("#mCancel").onclick=closeSheet;
+  $("#acCustomize").onclick=()=>{closeSheet();enterEdit()};
   $("#acExport").onclick=exportBackup;
   $("#acImport").onclick=()=>$("#acFile").click();
   $("#acFile").onchange=e=>{const f=e.target.files[0];if(f)importBackup(f)};

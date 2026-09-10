@@ -1,5 +1,5 @@
 /* StudyDesk service worker — offline app shell + installable PWA */
-const CACHE = "studydesk-v2";
+const CACHE = "studydesk-v3";
 const CORE = [
   "./", "./index.html", "./manifest.webmanifest",
   "./icon-192.png", "./icon-512.png", "./apple-touch-icon.png",

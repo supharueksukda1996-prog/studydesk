@@ -406,16 +406,30 @@ a{color:inherit}
 /* ===== customizable blocks (จัดหน้า) ===== */
 /* default: wrapper is invisible to layout -> UI identical to before */
 .lb{display:contents}
-body.lb-editing .lb{display:block;background:var(--surface);border:1px solid var(--line-2);border-radius:14px;
-  padding:10px 11px;margin:0 0 12px;box-shadow:var(--shadow);position:relative}
+/* display:contents beats the UA [hidden] rule, so hiding needs to be explicit
+   otherwise only the edit header disappears and the block content stays visible */
+.lb[hidden]{display:none!important}
+body.lb-editing .lb{display:block;width:100%;align-self:stretch;box-sizing:border-box;
+  background:var(--surface);border:1px solid var(--line-2);border-radius:16px;
+  padding:10px 12px 14px;margin:0 0 12px;box-shadow:var(--shadow);position:relative;
+  max-height:172px;overflow:hidden;touch-action:pan-y;user-select:none;-webkit-user-select:none;
+  -webkit-tap-highlight-color:transparent;
+  transition:transform .19s cubic-bezier(.2,.85,.3,1),box-shadow .18s ease,border-color .18s ease}
+/* while arranging, block content is a preview only — the whole card is the drag target */
+body.lb-editing .lb>*{pointer-events:none}
+body.lb-editing .lb>.lb-ctl{pointer-events:auto}
+body.lb-editing .lb::after{content:"";position:absolute;left:1px;right:1px;bottom:0;height:58px;
+  background:linear-gradient(to bottom,transparent,var(--surface));pointer-events:none}
 body.lb-editing .lb[data-core="1"]{border-color:color-mix(in srgb,var(--gold) 45%,var(--line))}
-body.lb-editing .view{padding-bottom:88px}
-body.lb-editing .lb.dragging{opacity:.45}
-body.lb-editing .lb.lb-over{outline:2px dashed var(--gold);outline-offset:2px}
+body.lb-editing .view{padding-bottom:96px}
+body.lb-editing .lb.lb-press{transform:scale(.975)}
+body.lb-editing .lb.lb-dragging{transition:none;border-color:var(--gold);
+  box-shadow:0 16px 34px rgba(0,0,0,.22),0 2px 6px rgba(0,0,0,.12)}
 .lb-ctl{display:flex;align-items:center;gap:6px;margin:0 0 10px;padding:0 0 8px;border-bottom:1px dashed var(--line-2)}
-.lb-grip{cursor:grab;color:var(--ink-3);font-size:1.1rem;touch-action:none;padding:2px 6px;user-select:none}
-.lb-nm{flex:1;font-size:.82rem;font-weight:700;color:var(--ink-2)}
-.lb-ctl button{border:1px solid var(--line-2);background:var(--surface-2);color:var(--ink-2);border-radius:8px;width:30px;height:30px;font-size:.85rem;flex:none}
+.lb-grip{cursor:grab;color:var(--ink-3);font-size:1.15rem;touch-action:none;padding:3px 7px;user-select:none;
+  border-radius:8px;background:var(--surface-2)}
+.lb-nm{flex:1;font-size:.82rem;font-weight:700;color:var(--ink-2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lb-ctl button{border:1px solid var(--line-2);background:var(--surface-2);color:var(--ink-2);border-radius:9px;width:32px;height:32px;font-size:.85rem;flex:none}
 .lb-ctl button:disabled{opacity:.32}
 .lb-ctl .lb-hide{color:var(--rose)}
 .lb-lock{font-size:.64rem;font-weight:700;color:var(--gold-ink);background:var(--gold-soft);padding:3px 9px;border-radius:999px;white-space:nowrap}
@@ -426,10 +440,12 @@ body.lb-editing .lb.lb-over{outline:2px dashed var(--gold);outline-offset:2px}
 .lb-chip .p{color:var(--green);font-weight:800;margin-left:5px}
 .lb-tray .empty{font-size:.76rem;color:var(--ink-3)}
 #lbEditBar{position:absolute;left:0;right:0;bottom:0;display:none;gap:8px;align-items:center;
-  padding:10px 14px calc(10px + env(safe-area-inset-bottom));background:var(--surface);border-top:1px solid var(--line);z-index:60}
+  padding:10px 14px calc(10px + env(safe-area-inset-bottom));background:var(--surface);border-top:1px solid var(--line);z-index:60;
+  user-select:none;-webkit-user-select:none}
 body.lb-editing #lbEditBar{display:flex}
 body.lb-editing .nav{display:none}
-#lbEditBar .info{flex:1;font-size:.82rem;color:var(--ink-2);font-weight:700}
+#lbEditBar .info{flex:1;min-width:0;font-size:.82rem;color:var(--ink-2);font-weight:700}
+#lbEditBar .info small{display:block;font-size:.68rem;font-weight:600;color:var(--ink-3);margin-top:1px}
 #lbEditBar button{border:none;border-radius:10px;padding:10px 13px;font-weight:700;font-size:.82rem}
 #lbEditBar .nav-cfg{background:var(--surface-2);color:var(--ink-2);border:1px solid var(--line-2)}
 #lbEditBar .done{background:var(--gold);color:#fff}
@@ -603,7 +619,7 @@ body.lb-editing .nav{display:none}
     <button data-v="money"><svg viewBox="0 0 24 24"><path d="M3 7h18v12H3zM3 10h18M7 15h4"/></svg>Money</button>
   </nav>
   <div id="lbEditBar">
-    <span class="info">🧩 จัดบล็อกหน้านี้</span>
+    <span class="info">🧩 จัดบล็อกหน้านี้<small>กดค้างที่การ์ด แล้วลากเพื่อสลับ</small></span>
     <button class="nav-cfg" id="lbNavCfg">📱 แถบล่าง</button>
     <button class="done" id="lbDone">เสร็จ</button>
   </div>
@@ -795,13 +811,14 @@ function openNavCfg(){const cfg=navCfg();
 let lbEditing=false;
 function enterEdit(){lbEditing=true;document.body.classList.add("lb-editing");refreshEdit()}
 function exitEdit(){lbEditing=false;document.body.classList.remove("lb-editing");clearEdit()}
-function clearEdit(){$$(".lb-ctl").forEach(e=>e.remove());$$(".lb-tray").forEach(e=>e.remove())}
+function clearEdit(){$$(".lb-ctl").forEach(e=>e.remove());$$(".lb-tray").forEach(e=>e.remove());
+  $$(".lb").forEach(e=>{e.style.transform="";e.style.zIndex="";e.classList.remove("lb-dragging","lb-press")})}
 function refreshEdit(){clearEdit();const view=curView();applyLayout(view);
   const cont=$(LB_CONT[view]),lay=lbLayout(view);
   const vis=lay.filter(i=>i.vis||lbDef(view,i.id).core);
   vis.forEach((item,idx)=>{const el=cont.querySelector('.lb[data-block="'+item.id+'"]');if(!el)return;
     const d=lbDef(view,item.id),ctl=document.createElement("div");ctl.className="lb-ctl";
-    ctl.innerHTML=`<span class="lb-grip" title="ลากเพื่อสลับ">⠿</span><span class="lb-nm">${d.ic} ${d.nm}</span>
+    ctl.innerHTML=`<span class="lb-grip" title="กดค้างแล้วลาก">⠿</span><span class="lb-nm">${d.ic} ${d.nm}</span>
       <button class="lb-up" ${idx===0?"disabled":""}>↑</button><button class="lb-down" ${idx===vis.length-1?"disabled":""}>↓</button>
       ${d.core?'<span class="lb-lock">🔒 หลัก</span>':'<button class="lb-hide" title="ซ่อน">👁</button>'}`;
     el.prepend(ctl);
@@ -816,25 +833,83 @@ function refreshEdit(){clearEdit();const view=curView();applyLayout(view);
   cont.appendChild(tray);
   tray.querySelectorAll("[data-add]").forEach(b=>b.onclick=()=>setBlockVis(view,b.dataset.add,true));
   enableBlockDrag(cont,view)}
-function moveBlock(view,id,dir){const lay=lbLayout(view),i=lay.findIndex(x=>x.id===id),j=i+dir;
-  if(j<0||j>=lay.length)return;[lay[i],lay[j]]=[lay[j],lay[i]];saveLb(view,lay);refreshEdit()}
+/* step over hidden blocks so ↑/↓ always lands on the next visible neighbour */
+function moveBlock(view,id,dir){const lay=lbLayout(view),i=lay.findIndex(x=>x.id===id);if(i<0)return;
+  const shown=it=>it.vis||lbDef(view,it.id).core;
+  let j=i+dir;while(j>=0&&j<lay.length&&!shown(lay[j]))j+=dir;
+  if(j<0||j>=lay.length)return;
+  const[it]=lay.splice(i,1);lay.splice(j,0,it);saveLb(view,lay);refreshEdit()}
 function setBlockVis(view,id,vis){const lay=lbLayout(view),it=lay.find(x=>x.id===id);if(!it)return;
   it.vis=vis;if(vis){lay.splice(lay.indexOf(it),1);lay.push(it)}saveLb(view,lay);refreshEdit()}
-function enableBlockDrag(cont,view){let drag=null;
-  cont.querySelectorAll(".lb-grip").forEach(g=>{g.onpointerdown=e=>{if(!lbEditing)return;e.preventDefault();
-    drag=g.closest(".lb");drag.classList.add("dragging");g.setPointerCapture(e.pointerId);
-    const move=ev=>{const items=[...cont.querySelectorAll(".lb:not([hidden])")];
-      items.forEach(x=>x.classList.remove("lb-over"));
-      const after=items.find(x=>{if(x===drag)return false;const r=x.getBoundingClientRect();return ev.clientY<r.top+r.height/2});
-      if(after)after.classList.add("lb-over")};
-    const up=()=>{document.removeEventListener("pointermove",move);document.removeEventListener("pointerup",up);
-      const over=cont.querySelector(".lb-over");
-      if(over&&over!==drag){const ids=[...cont.querySelectorAll(".lb:not([hidden])")].map(x=>x.dataset.block);
-        ids.splice(ids.indexOf(drag.dataset.block),1);ids.splice(ids.indexOf(over.dataset.block),0,drag.dataset.block);
-        const lay=lbLayout(view),hiddenItems=lay.filter(l=>!ids.includes(l.id));
-        const neworder=ids.map(id=>lay.find(l=>l.id===id)).concat(hiddenItems);saveLb(view,neworder)}
-      if(drag)drag.classList.remove("dragging");drag=null;refreshEdit()};
-    document.addEventListener("pointermove",move);document.addEventListener("pointerup",up)}})}
+/* long-press anywhere on a card (or grab the ⠿ grip) to drag; neighbours slide out of the way live */
+const LB_GAP=12,LB_HOLD=230;
+function enableBlockDrag(cont,view){
+  if(cont.dataset.lbdrag)return;cont.dataset.lbdrag="1";
+  const sc=$(".scroll");let st=null,hold=null,press=null;
+  const buzz=n=>{try{navigator.vibrate&&navigator.vibrate(n)}catch(_){}};
+  const dropPress=()=>{if(hold){clearTimeout(hold);hold=null}
+    if(press){press.classList.remove("lb-press");press=null}};
+  /* every displaced card steps by exactly the dragged card's height */
+  const shuffle=()=>{const{list,idx,to,H}=st;list.forEach((x,i)=>{if(i===idx)return;
+    let t=0;if(to>idx&&i>idx&&i<=to)t=-H;else if(to<idx&&i>=to&&i<idx)t=H;
+    x.style.transform=t?"translate3d(0,"+t+"px,0)":""})};
+  const holdScroll=e=>{if(st)e.preventDefault()};
+  const onMove=e=>{if(!st||e.pointerId!==st.pid)return;
+    const r=sc.getBoundingClientRect(),y=e.clientY;
+    let d=0;if(y<r.top+72)d=(y-(r.top+72))*.35;else if(y>r.bottom-120)d=(y-(r.bottom-120))*.35;
+    /* rects stay in the frame captured at drag start, so absorb scrolling into the origin */
+    if(d){const b=sc.scrollTop;sc.scrollTop+=d;st.sy-=sc.scrollTop-b}
+    const dy=e.clientY-st.sy;
+    st.el.style.transform="translate3d(0,"+dy+"px,0) scale(1.03)";
+    const c=st.rects[st.idx].top+st.rects[st.idx].height/2+dy;
+    let to=0;st.list.forEach((x,i)=>{if(i===st.idx)return;
+      const q=st.rects[i];if(c>q.top+q.height/2)to++});
+    if(to!==st.to){st.to=to;shuffle();buzz(5)}};
+  const onUp=()=>{if(!st)return;const{el,list,rects,idx,to}=st;
+    document.removeEventListener("pointermove",onMove);
+    document.removeEventListener("pointerup",onUp);
+    document.removeEventListener("pointercancel",onUp);
+    document.removeEventListener("touchmove",holdScroll);
+    let rest=0;
+    if(to>idx)for(let i=idx+1;i<=to;i++)rest+=rects[i].height+LB_GAP;
+    else if(to<idx)for(let i=to;i<idx;i++)rest-=rects[i].height+LB_GAP;
+    el.classList.remove("lb-dragging");el.style.transform="translate3d(0,"+rest+"px,0)";
+    const ids=list.map(x=>x.dataset.block),mv=ids.splice(idx,1)[0];ids.splice(to,0,mv);
+    const moved=to!==idx;st=null;if(moved)buzz(9);
+    setTimeout(()=>{list.forEach(x=>{x.style.transform="";x.style.zIndex=""});
+      if(moved){const lay=lbLayout(view),off=lay.filter(l=>!ids.includes(l.id));
+        saveLb(view,ids.map(id=>lay.find(l=>l.id===id)).concat(off))}
+      refreshEdit()},200)};
+  const start=(el,sy,pid)=>{const list=[...cont.querySelectorAll(".lb:not([hidden])")],idx=list.indexOf(el);
+    if(idx<0)return;dropPress();
+    const rects=list.map(x=>x.getBoundingClientRect());
+    st={el,list,rects,idx,to:idx,sy,pid,H:rects[idx].height+LB_GAP};
+    el.classList.add("lb-dragging");el.style.zIndex="40";
+    el.style.transform="translate3d(0,0,0) scale(1.03)";buzz(14);
+    document.addEventListener("pointermove",onMove);
+    document.addEventListener("pointerup",onUp);
+    document.addEventListener("pointercancel",onUp);
+    document.addEventListener("touchmove",holdScroll,{passive:false})};
+  cont.addEventListener("pointerdown",e=>{
+    if(!lbEditing||st)return;if(e.pointerType==="mouse"&&e.button!==0)return;
+    const el=e.target.closest(".lb");if(!el||el.hidden)return;
+    const grip=e.target.closest(".lb-grip");
+    if(!grip&&e.target.closest("button,a,input,textarea,select"))return;
+    const sx=e.clientX,sy=e.clientY,pid=e.pointerId;
+    if(grip){e.preventDefault();start(el,sy,pid);return}
+    press=el;el.classList.add("lb-press");
+    const off=()=>{dropPress();document.removeEventListener("pointermove",chk);
+      document.removeEventListener("pointerup",off);document.removeEventListener("pointercancel",off)};
+    const chk=ev=>{if(st||ev.pointerId!==pid)return;
+      if(Math.abs(ev.clientY-sy)>9||Math.abs(ev.clientX-sx)>9)off()};
+    hold=setTimeout(()=>{hold=null;
+      document.removeEventListener("pointermove",chk);
+      document.removeEventListener("pointerup",off);
+      document.removeEventListener("pointercancel",off);
+      start(el,sy,pid)},LB_HOLD);
+    document.addEventListener("pointermove",chk);
+    document.addEventListener("pointerup",off);
+    document.addEventListener("pointercancel",off)})}
 $("#lbDone").onclick=exitEdit;
 $("#lbNavCfg").onclick=openNavCfg;
 

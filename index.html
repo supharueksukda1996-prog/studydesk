@@ -264,6 +264,34 @@ a{color:inherit}
 .addbtns .out{background:var(--rose-soft);color:var(--rose)}
 .addbtns .in{background:var(--green-soft);color:var(--green)}
 .addbtns .scb{background:var(--ink);color:var(--surface);flex:0 0 auto;padding:13px 16px}
+
+/* accounts · บัญชีย่อย */
+.accstrip{display:flex;gap:10px;overflow-x:auto;padding:2px 4px 4px;margin:0 -2px;scrollbar-width:none}
+.accstrip::-webkit-scrollbar{display:none}
+.acc{flex:none;min-width:138px;max-width:200px;text-align:left;padding:12px 14px;border-radius:var(--radius-sm);
+  background:var(--surface);border:1px solid var(--line);box-shadow:var(--shadow);position:relative;overflow:hidden;color:var(--ink);display:block}
+.acc::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--ac,var(--ink-3))}
+.acc.on{border-color:var(--ink);box-shadow:0 0 0 1.5px var(--ink),var(--shadow)}
+.acc .an{display:block;font-size:.74rem;font-weight:700;color:var(--ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-transform:none;letter-spacing:normal}
+.acc .av{display:block;font-family:"IBM Plex Mono",monospace;font-weight:600;font-size:1.22rem;line-height:1.1;margin-top:5px;font-variant-numeric:tabular-nums}
+.acc .av.neg{color:var(--rose)}
+.acc .as{display:block;font-size:.66rem;color:var(--ink-3);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-variant-numeric:tabular-nums}
+.acc-add{flex:none;min-width:52px;border:1.5px dashed var(--line-2);background:none;color:var(--ink-3);border-radius:var(--radius-sm);font-size:1.4rem}
+.accbtns{display:flex;gap:10px;margin-top:10px}
+.accbtns button{flex:1;padding:11px;border-radius:var(--radius-sm);border:1px solid var(--line-2);background:var(--surface);color:var(--ink-2);font-weight:700;font-size:.85rem;box-shadow:var(--shadow)}
+.acclist{display:flex;flex-direction:column;gap:8px;margin-bottom:12px}
+.accrow{display:flex;align-items:center;gap:10px;padding:11px 13px;border-radius:11px;background:var(--surface-2);border:1px solid var(--line)}
+.accrow .dot{width:11px;height:11px;border-radius:50%;flex:none}
+.accrow .nm{flex:1;min-width:0;font-size:.9rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.accrow .nm small{display:block;font-weight:400;font-size:.68rem;color:var(--ink-3)}
+.accrow .bal{font-family:"IBM Plex Mono",monospace;font-size:.84rem;font-weight:600;color:var(--ink-2);font-variant-numeric:tabular-nums;flex:none}
+.accrow button{border:1px solid var(--line-2);background:var(--surface);color:var(--ink-2);min-width:32px;height:30px;border-radius:8px;flex:none;font-size:.8rem;font-weight:600;padding:0 8px}
+.accrow button.rm{color:var(--rose)}
+.colorpick{display:flex;flex-wrap:wrap;gap:9px;margin-bottom:12px}
+.colorpick button{width:30px;height:30px;border-radius:50%;border:2px solid transparent;padding:0}
+.colorpick button.sel{border-color:var(--ink);transform:scale(1.12)}
+.tx.tf .tdot{background:var(--surface-2)!important;color:var(--ink-2);border:1px solid var(--line-2);font-size:.95rem}
+.tx .amt.tf{color:var(--ink-3)}
 .catbars{margin-top:6px;display:flex;flex-direction:column;gap:10px}
 .catrow{display:flex;align-items:center;gap:11px}
 .catrow .dot{width:11px;height:11px;border-radius:50%;flex:none}
@@ -573,12 +601,19 @@ body.lb-editing .nav{display:none}
           <div style="display:flex;gap:8px"><button class="linkbtn" id="moCfg">⚙ ตั้งค่า</button><button class="linkbtn" id="copySheet">Copy</button></div>
         </div>
       </div>
+      <div class="lb" data-block="accounts" data-core="0">
+        <div class="eyebrow">บัญชี · Accounts
+          <span style="display:flex;gap:6px;margin-left:auto"><button class="linkbtn" id="accNew">＋ ใหม่</button><button class="linkbtn" id="accManage">⚙ จัดการ</button></span>
+        </div>
+        <div class="accstrip" id="accStrip"></div>
+        <div class="accbtns"><button id="tfBtn">⇄ โอนเงินระหว่างบัญชี</button></div>
+      </div>
       <div class="lb" data-block="budget" data-core="0">
         <div class="budgetcard" id="budgetCard"></div>
       </div>
       <div class="lb" data-block="balance" data-core="1">
         <div class="balcard">
-          <div class="bal-l">คงเหลือเดือนนี้ · Net this month</div>
+          <div class="bal-l" id="balLbl">คงเหลือเดือนนี้ · Net this month</div>
           <div class="bal" id="balNet">฿0</div>
           <div class="io">
             <div class="box in"><div class="k">รายรับ · Income</div><div class="v" id="ioIn">฿0</div></div>
@@ -699,6 +734,29 @@ let shifts=store.get("sd_shifts",[]);
 const saveExams=()=>store.set("sd_exams",exams),saveTasks=()=>store.set("sd_tasks",tasks),
   saveProjects=()=>store.set("sd_projects",projects),saveHabits=()=>store.set("sd_habits",habits),saveTx=()=>store.set("sd_tx",txs),
   saveShifts=()=>store.set("sd_shifts",shifts);
+
+/* ---- accounts · บัญชีย่อย ----
+   บัญชีหลักเป็น id "main" (ไม่เก็บใน sd_accounts) — รายการเก่าที่ไม่มี t.acc ถือเป็นบัญชีหลัก
+   การโอนเก็บแยกใน sd_transfers จึงไม่ปนกับยอดรายรับ/รายจ่าย */
+const MAIN_ACC="main";
+const ACC_COLORS=["#3F6FD6","#12897E","#B65FC0","#E0863C","#2E8B57","#C4453B","#D9A521","#5B4FC0"];
+let accounts=store.get("sd_accounts",[]);      // [{id,name,color}]
+let transfers=store.get("sd_transfers",[]);    // [{id,from,to,amount,date,note}]
+let accFilter="";                              // "" = ทุกบัญชี
+const saveAccounts=()=>store.set("sd_accounts",accounts),saveTransfers=()=>store.set("sd_transfers",transfers);
+const allAccounts=()=>[{id:MAIN_ACC,name:"บัญชีหลัก",color:"var(--ink-2)",main:true},...accounts];
+const accOf=id=>allAccounts().find(a=>a.id===(id||MAIN_ACC))||{id:id,name:"(ลบแล้ว)",color:"#8A93A6"};
+const txAcc=t=>t.acc||MAIN_ACC;
+const accMatch=t=>!accFilter||txAcc(t)===accFilter;
+function accBalance(id){let s=0;
+  txs.forEach(t=>{if(txAcc(t)===id)s+=t.type==="in"?t.amount:-t.amount});
+  transfers.forEach(f=>{if(f.to===id)s+=f.amount;if(f.from===id)s-=f.amount});return s}
+/* รวมทุกบัญชี — การโอนหักล้างกันเอง จึงเท่ากับรายรับรวม − รายจ่ายรวม */
+const accTotal=()=>txs.reduce((s,t)=>s+(t.type==="in"?t.amount:-t.amount),0);
+function accMonthIO(id,mk){let i=0,o=0;
+  txs.forEach(t=>{if(txAcc(t)===id&&monthKey(t.date)===mk){if(t.type==="in")i+=t.amount;else o+=t.amount}});
+  transfers.forEach(f=>{if(monthKey(f.date)===mk){if(f.to===id)i+=f.amount;if(f.from===id)o+=f.amount}});
+  return{i:i,o:o}}
 const SHIFT_TYPES=[{id:"morning",nm:"เวรเช้า",c:"#E8A33D"},{id:"afternoon",nm:"เวรบ่าย",c:"#3F8FD6"},
   {id:"night",nm:"เวรดึก",c:"#5B4FC0"},{id:"oncall",nm:"อยู่เวร (on-call)",c:"#C4453B"},
   {id:"opd",nm:"OPD",c:"#12897E"},{id:"or",nm:"OR/ห้องผ่าตัด",c:"#B65FC0"},{id:"off",nm:"หยุด",c:"#8A93A6"}];
@@ -740,7 +798,7 @@ const LB_DEFS={
   focus:[{id:"timer",nm:"ตัวจับเวลา",ic:"⏱️",core:1},{id:"week",nm:"สถิติ 7 วัน",ic:"📊"},
     {id:"pfocus",nm:"โฟกัสตามโปรเจกต์",ic:"🎯"}],
   habits:[{id:"habits",nm:"รายการนิสัย",ic:"✅",core:1},{id:"achievements",nm:"ความสำเร็จ",ic:"🏆"}],
-  money:[{id:"month",nm:"เลือกเดือน",ic:"📅",core:1},{id:"budget",nm:"งบประมาณ",ic:"🎯"},
+  money:[{id:"month",nm:"เลือกเดือน",ic:"📅",core:1},{id:"accounts",nm:"บัญชีย่อย",ic:"🏦"},{id:"budget",nm:"งบประมาณ",ic:"🎯"},
     {id:"balance",nm:"รายรับ-รายจ่าย",ic:"💰",core:1},{id:"dashboard",nm:"แดชบอร์ด",ic:"📊"},
     {id:"trend",nm:"กราฟรายวัน",ic:"📈"},{id:"categories",nm:"ตามหมวด",ic:"🏷️"},
     {id:"transactions",nm:"รายการล่าสุด",ic:"🧾"}]
@@ -1364,16 +1422,17 @@ function openMoneySettings(){openSheet(`<h3>ตั้งค่าการเง
   $("#mCancel").onclick=closeSheet;
   $("#bSave").onclick=()=>{budget=Math.max(0,parseFloat($("#bAmt").value)||0);store.set("sd_budget",budget);closeSheet();renderMoney();toast("บันทึกงบแล้ว ✓")}}
 $("#moCfg").onclick=openMoneySettings;
-function daySpend(dateKey){return txs.filter(t=>t.type==="out"&&t.date===dateKey).reduce((s,t)=>s+t.amount,0)}
+function daySpend(dateKey){return txs.filter(t=>t.type==="out"&&t.date===dateKey&&accMatch(t)).reduce((s,t)=>s+t.amount,0)}
 function renderBudget(){const card=$("#budgetCard");const spent=daySpend(todayKey());
-  if(!budget){card.className="budgetcard";card.innerHTML=`<div class="bh"><span class="bt">งบวันนี้ · Today</span>
+  const bttl="งบวันนี้ · "+(accFilter?esc(accOf(accFilter).name):"Today");
+  if(!budget){card.className="budgetcard";card.innerHTML=`<div class="bh"><span class="bt">${bttl}</span>
     <button class="setlink" id="bcSet">ตั้งงบรายวัน ＋</button></div>
     <div class="bmsg">ใช้ไปวันนี้ <b>${baht(spent)}</b> — ตั้งงบเพื่อดูแถบเตือน</div>`;
     $("#bcSet").onclick=openMoneySettings;return}
   const pct=Math.min(100,spent/budget*100);const over=spent>budget;const warn=!over&&pct>=80;
   card.className="budgetcard"+(over?" over":warn?" warn":"");
   const left=budget-spent;
-  card.innerHTML=`<div class="bh"><span class="bt">งบวันนี้ · Today</span>
+  card.innerHTML=`<div class="bh"><span class="bt">${bttl}</span>
     <span class="bv"><b>${baht(spent)}</b> / ${baht(budget)}</span></div>
     <div class="btrack"><i style="width:${pct}%"></i></div>
     <div class="bmsg">${over?`เกินงบ ${baht(spent-budget)} ⚠️`:`เหลืออีก ${baht(left)} วันนี้`}</div>`}
@@ -1419,12 +1478,112 @@ function renderDashboard(list,exp){const[y,m]=curMonth.split("-").map(Number);
     days.push({v,lab:d.getDate(),today:i===0})}
   days.forEach(d=>{const col=document.createElement("div");col.className="col";
     col.innerHTML=`<div class="cval">${d.v?Math.round(d.v):""}</div><div class="bar${d.today?" today":""}" style="height:${d.v/mx*100}%"></div><div class="cd">${d.lab}</div>`;chart.appendChild(col)})}
+/* ---- accounts UI ---- */
+const baht2=n=>(n<0?"−฿":"฿")+Math.abs(Math.round(n)).toLocaleString();
+const num=n=>Math.round(n).toLocaleString();
+const accOpts=sel=>allAccounts().map(a=>`<option value="${a.id}" ${a.id===sel?"selected":""}>${esc(a.name)}</option>`).join("");
+
+function renderAccounts(){const strip=$("#accStrip");if(!strip)return;strip.innerHTML="";
+  const mk=curMonth,has=accounts.length>0;
+  const card=(id,name,color,val,sub,on)=>{const b=document.createElement("button");
+    b.className="acc"+(on?" on":"");b.style.setProperty("--ac",color);
+    b.innerHTML=`<span class="an">${esc(name)}</span><span class="av${val<0?" neg":""}">${baht2(val)}</span>`+
+      (sub?`<span class="as">${sub}</span>`:"");
+    strip.appendChild(b);return b};
+  if(has){card("","ทุกบัญชี","#8A93A6",accTotal(),allAccounts().length+" บัญชี",!accFilter)
+      .onclick=()=>{accFilter="";renderMoney()}}
+  allAccounts().forEach(a=>{const io_=accMonthIO(a.id,mk);
+    const sub=(io_.i||io_.o)?`+${num(io_.i)} · −${num(io_.o)}`:"เดือนนี้ยังไม่มีรายการ";
+    const b=card(a.id,a.name,a.color,accBalance(a.id),sub,accFilter===a.id);
+    b.onclick=()=>{accFilter=accFilter===a.id?"":a.id;renderMoney()}});
+  const add=document.createElement("button");add.className="acc-add";add.textContent="＋";
+  add.setAttribute("aria-label","สร้างบัญชีใหม่");add.onclick=()=>accountModal();strip.appendChild(add);
+  $("#tfBtn").disabled=!has;$("#tfBtn").style.opacity=has?"":".5"}
+
+function accountModal(a){const edit=!!a;a=a||{};
+  let color=a.color||ACC_COLORS[accounts.length%ACC_COLORS.length];
+  openSheet(`<h3>${edit?"แก้ไขบัญชี":"บัญชีย่อยใหม่"}</h3>
+    <label class="fl">ชื่อบัญชี</label>
+    <input id="acName" maxlength="24" placeholder="เช่น fix cost, เงินฝาก, ค่าหอ" value="${esc(a.name||"")}">
+    <label class="fl">สี</label><div class="colorpick" id="acColor"></div>
+    <div class="hintline">${edit?`ยอดคงเหลือตอนนี้ <b>${baht2(accBalance(a.id))}</b>`:"สร้างเสร็จแล้ว ใช้ปุ่ม ⇄ โอนเงิน เพื่อกันเงินจากบัญชีหลักเข้ามาได้เลย"}</div>
+    <div class="row2"><button class="cancel" id="mCancel">Cancel</button><button class="save" id="mSave">บันทึก</button></div>`);
+  const cp=$("#acColor");ACC_COLORS.forEach(c=>{const b=document.createElement("button");b.style.background=c;
+    b.setAttribute("aria-label","สี "+c);if(c===color)b.classList.add("sel");
+    b.onclick=()=>{color=c;$$("#acColor button").forEach(x=>x.classList.remove("sel"));b.classList.add("sel")};cp.appendChild(b)});
+  $("#acName").focus();$("#mCancel").onclick=closeSheet;
+  $("#mSave").onclick=()=>{const nm=$("#acName").value.trim();if(!nm){$("#acName").focus();return}
+    if(edit){const it=accounts.find(x=>x.id===a.id);if(it){it.name=nm;it.color=color}}
+    else accounts.push({id:uid(),name:nm,color:color});
+    saveAccounts();closeSheet();renderMoney();toast(edit?"บันทึกแล้ว ✓":"สร้างบัญชีแล้ว ✓")}}
+
+function accountsSheet(){openSheet(`<h3>จัดการบัญชี</h3>
+  <div class="hintline">ลบบัญชีย่อยได้ตลอด — เงินที่เหลือและรายการทั้งหมดจะย้ายกลับเข้าบัญชีหลัก ข้อมูลไม่หาย</div>
+  <div class="acclist" id="acList"></div>
+  <button class="photobtn" id="acAdd">＋ สร้างบัญชีใหม่</button>
+  <div class="row2"><button class="cancel" id="mCancel">ปิด</button></div>`);
+  const L=$("#acList");
+  allAccounts().forEach(a=>{const n=txs.filter(t=>txAcc(t)===a.id).length;
+    const row=document.createElement("div");row.className="accrow";
+    row.innerHTML=`<span class="dot" style="background:${a.color}"></span>
+      <span class="nm">${esc(a.name)}<small>${a.main?"บัญชีหลัก · ลบไม่ได้":n+" รายการ"}</small></span>
+      <span class="bal">${baht2(accBalance(a.id))}</span>
+      ${a.main?"":`<button class="ed" aria-label="แก้ไขบัญชี">แก้</button><button class="rm" aria-label="ลบบัญชี">✕</button>`}`;
+    if(!a.main){row.querySelector(".ed").onclick=()=>accountModal(a);
+      row.querySelector(".rm").onclick=()=>deleteAccount(a)}
+    L.appendChild(row)});
+  $("#acAdd").onclick=()=>accountModal();$("#mCancel").onclick=closeSheet}
+
+/* ลบบัญชี: ย้ายรายการทั้งหมดไปบัญชีหลัก — ยอดคงเหลือจึงรวมเข้าบัญชีหลักพอดี */
+function deleteAccount(a){const bal=accBalance(a.id),n=txs.filter(t=>txAcc(t)===a.id).length;
+  confirmSheet(`ลบบัญชี "${a.name}"? ยอดคงเหลือ ${baht2(bal)} จะรวมกลับเข้าบัญชีหลัก`+
+    (n?` และรายการ ${n} รายการจะย้ายไปอยู่ใต้บัญชีหลัก`:"")+" ข้อมูลไม่หาย",()=>{
+    txs.forEach(t=>{if(txAcc(t)===a.id)t.acc=MAIN_ACC});
+    transfers=transfers.map(f=>({...f,from:f.from===a.id?MAIN_ACC:f.from,to:f.to===a.id?MAIN_ACC:f.to})).filter(f=>f.from!==f.to);
+    accounts=accounts.filter(x=>x.id!==a.id);
+    if(accFilter===a.id)accFilter="";
+    saveTx();saveTransfers();saveAccounts();closeSheet();renderMoney();
+    toast("ลบบัญชีแล้ว · เงินกลับเข้าบัญชีหลัก ✓")},"ลบบัญชี")}
+
+function transferModal(){const list=allAccounts();
+  if(list.length<2){toast("สร้างบัญชีย่อยก่อนถึงจะโอนได้");return}
+  const from0=accFilter||MAIN_ACC,to0=(list.find(a=>a.id!==from0)||{}).id;
+  openSheet(`<h3>⇄ โอนเงินระหว่างบัญชี</h3>
+    <div class="hintline">ย้ายเงินระหว่างบัญชีของคุณเอง — ไม่นับเป็นรายรับหรือรายจ่าย ยอดรวมทุกบัญชีจึงไม่เปลี่ยน</div>
+    <label class="fl">จำนวนเงิน (บาท)</label><input class="amtin" id="tfAmt" type="number" inputmode="decimal" placeholder="0">
+    <label class="fl">จากบัญชี</label><select id="tfFrom">${accOpts(from0)}</select>
+    <label class="fl">ไปยังบัญชี</label><select id="tfTo">${accOpts(to0)}</select>
+    <div class="hintline" id="tfHint"></div>
+    <label class="fl">วันที่</label><input type="date" id="tfDate" value="${todayKey()}">
+    <label class="fl">บันทึก (ไม่บังคับ)</label><input id="tfNote" maxlength="60" placeholder="เช่น กันเงินค่าหอ">
+    <div class="row2"><button class="cancel" id="mCancel">Cancel</button><button class="save" id="mSave">โอนเงิน</button></div>`);
+  const hint=()=>{const f=$("#tfFrom").value,b=accBalance(f);
+    $("#tfHint").innerHTML=`คงเหลือใน ${esc(accOf(f).name)} ตอนนี้ <b>${baht2(b)}</b>`};
+  $("#tfFrom").onchange=hint;hint();
+  $("#tfAmt").focus();$("#mCancel").onclick=closeSheet;
+  $("#mSave").onclick=()=>{const amount=parseFloat($("#tfAmt").value);
+    if(!amount||amount<=0){$("#tfAmt").focus();return}
+    const from=$("#tfFrom").value,to=$("#tfTo").value;
+    if(from===to){toast("เลือกบัญชีต้นทางกับปลายทางให้ต่างกัน");return}
+    const date=$("#tfDate").value||todayKey();
+    transfers.push({id:uid(),from:from,to:to,amount:amount,date:date,note:$("#tfNote").value.trim()});
+    saveTransfers();curMonth=monthKey(date);closeSheet();renderMoney();
+    toast(`โอน ${baht2(amount)} → ${accOf(to).name} ✓`)}}
+
+$("#accNew").onclick=()=>accountModal();
+$("#accManage").onclick=accountsSheet;
+$("#tfBtn").onclick=transferModal;
+
 function renderMoney(){const[y,m]=curMonth.split("-").map(Number);
   $("#moLabel").textContent=new Date(y,m-1,1).toLocaleDateString(undefined,{month:"long",year:"numeric"});
-  const list=txs.filter(t=>monthKey(t.date)===curMonth).sort((a,b)=>b.date.localeCompare(a.date)||b.id.localeCompare(a.id));
+  if(accFilter&&!accounts.some(a=>a.id===accFilter))accFilter="";
+  renderAccounts();
+  const list=txs.filter(t=>monthKey(t.date)===curMonth&&accMatch(t)).sort((a,b)=>b.date.localeCompare(a.date)||b.id.localeCompare(a.id));
   let inc=0,exp=0;list.forEach(t=>t.type==="in"?inc+=t.amount:exp+=t.amount);const net=inc-exp;
   $("#ioIn").textContent=baht(inc);$("#ioOut").textContent=baht(exp);
-  $("#balNet").textContent=(net<0?"−฿":"฿")+Math.abs(Math.round(net)).toLocaleString();$("#balNet").classList.toggle("neg",net<0);
+  $("#balNet").textContent=baht2(net);$("#balNet").classList.toggle("neg",net<0);
+  /* ตอนกรองบัญชี ใช้คำว่า "รายรับ−รายจ่าย" เพื่อไม่ให้สับสนกับยอดคงเหลือสะสมบนการ์ดบัญชี */
+  $("#balLbl").textContent=accFilter?("รายรับ−รายจ่ายเดือนนี้ · "+accOf(accFilter).name):"คงเหลือเดือนนี้ · Net this month";
   renderBudget();renderDashboard(list,exp);
   const bars=$("#catBars");bars.innerHTML="";const byCat={};list.filter(t=>t.type==="out").forEach(t=>byCat[t.cat]=(byCat[t.cat]||0)+t.amount);
   const cats=Object.entries(byCat).sort((a,b)=>b[1]-a[1]);const max=cats.length?cats[0][1]:1;
@@ -1432,22 +1591,40 @@ function renderMoney(){const[y,m]=curMonth.split("-").map(Number);
   cats.forEach(([id,amt])=>{const c=catOf(id);const row=document.createElement("div");row.className="catrow";
     row.innerHTML=`<span class="dot" style="background:${c.c}"></span><span class="nm">${esc(c.nm)}</span>
       <span class="track"><i style="width:${Math.max(6,amt/max*100)}%;background:${c.c}"></i></span><span class="amt">${baht(amt)}</span>`;bars.appendChild(row)});
-  const ul=$("#txList");ul.innerHTML="";$("#txCount").textContent=list.length?list.length+" รายการ":"";
-  if(!list.length){ul.innerHTML=`<div class="empty"><div class="big">฿</div>ยังไม่มีรายการ</div>`;return}
-  list.forEach(t=>{const c=catOf(t.cat);const li=document.createElement("li");li.className="tx";
-    const dd=new Date(t.date+"T00:00").toLocaleDateString(undefined,{day:"numeric",month:"short"});
+  const tfList=transfers.filter(f=>monthKey(f.date)===curMonth&&(!accFilter||f.from===accFilter||f.to===accFilter));
+  const rows=[...list.map(t=>({k:"tx",d:t.date,id:t.id,o:t})),...tfList.map(f=>({k:"tf",d:f.date,id:f.id,o:f}))]
+    .sort((a,b)=>b.d.localeCompare(a.d)||b.id.localeCompare(a.id));
+  const ul=$("#txList");ul.innerHTML="";$("#txCount").textContent=rows.length?rows.length+" รายการ":"";
+  if(!rows.length){ul.innerHTML=`<div class="empty"><div class="big">฿</div>ยังไม่มีรายการ</div>`;return}
+  const dfmt=ds=>new Date(ds+"T00:00").toLocaleDateString(undefined,{day:"numeric",month:"short"});
+  rows.forEach(r=>{const li=document.createElement("li");
+    if(r.k==="tf"){const f=r.o,fn=accOf(f.from).name,tn=accOf(f.to).name;
+      const sign=accFilter?(f.to===accFilter?"+":"−"):"";
+      li.className="tx tf";
+      li.innerHTML=`<span class="tdot">⇄</span>
+        <span class="ti"><span class="n">${esc(f.note||"โอนเงิน")}</span>
+          <span class="s">${esc(fn)} → ${esc(tn)} · ${dfmt(f.date)}</span></span>
+        <span class="amt tf">${sign}${baht(f.amount).slice(1)}</span>
+        <button class="del" aria-label="Delete">✕</button>`;
+      li.querySelector(".del").onclick=()=>{transfers=transfers.filter(x=>x.id!==f.id);saveTransfers();renderMoney()};
+      ul.appendChild(li);return}
+    const t=r.o,c=catOf(t.cat);li.className="tx";
+    const an=accounts.length?" · "+esc(accOf(txAcc(t)).name):"";
     li.innerHTML=`<span class="tdot" style="background:${c.c}">${esc(c.nm[0]||"?")}</span>
-      <span class="ti"><span class="n">${esc(t.note||c.nm)}</span><span class="s">${esc(c.nm)} · ${dd}</span></span>
+      <span class="ti"><span class="n">${esc(t.note||c.nm)}</span><span class="s">${esc(c.nm)}${an} · ${dfmt(t.date)}</span></span>
       <span class="amt ${t.type}">${t.type==="in"?"+":"−"}${baht(t.amount).slice(1)}</span>
       ${t.slip?`<button class="slipview" aria-label="ดูสลิป" title="ดูสลิป">🧾</button>`:""}
       <button class="del" aria-label="Delete">✕</button>`;
     if(t.slip)li.querySelector(".slipview").onclick=()=>viewSlip(t);
-    li.querySelector(".del").onclick=()=>{if(t.slip)delPhoto(t.id);txs=txs.filter(x=>x.id!==t.id);saveTx();renderMoney()};ul.appendChild(li)})}
+    li.querySelector(".del").onclick=()=>{if(t.slip)delPhoto(t.id);txs=txs.filter(x=>x.id!==t.id);saveTx();renderMoney()};
+    ul.appendChild(li)})}
 function txModal(type,pre){const cats=type==="in"?IN_CATS:OUT_CATS;let selCat=(pre&&pre.cat)||cats[0].id;
+  const preAcc=(pre&&pre.acc)||accFilter||MAIN_ACC;
   openSheet(`<h3>${type==="in"?"เพิ่มรายรับ · Income":"เพิ่มรายจ่าย · Expense"}</h3>
     ${pre&&pre.raw?`<div class="parsed">อ่านจาก SCB: <b>฿${pre.amount||"?"}</b>${pre.note?" · "+esc(pre.note):""} <span style="color:var(--ink-3)">(แก้ไขได้)</span></div>`:""}
     <label class="fl">จำนวนเงิน (บาท)</label><input class="amtin" id="mAmt" type="number" inputmode="decimal" placeholder="0" value="${(pre&&pre.amount)||""}">
     <label class="fl">หมวด</label><div class="catpick" id="mCat"></div>
+    ${accounts.length?`<label class="fl">${type==="in"?"เข้าบัญชี":"หักจากบัญชี"}</label><select id="mAcc">${accOpts(preAcc)}</select>`:""}
     <label class="fl">บันทึก (ไม่บังคับ)</label><input id="mNote" placeholder="เช่น ข้าวเที่ยง, ค่ารถ" maxlength="60" value="${pre&&pre.note?esc(pre.note):""}">
     <label class="fl">วันที่</label><input type="date" id="mDate" value="${(pre&&pre.date)||todayKey()}">
     <label class="fl">สลิป (ไม่บังคับ)</label>
@@ -1464,9 +1641,11 @@ function txModal(type,pre){const cats=type==="in"?IN_CATS:OUT_CATS;let selCat=(p
     const data=await compressImage(f,1200,.7);if(data){slipData=data;$("#slImg").src=data;$("#slImg").hidden=false}$("#slBtn").textContent="📷 เปลี่ยนสลิป"};
   $("#mAmt").focus();$("#mCancel").onclick=closeSheet;
   $("#mSave").onclick=()=>{const amount=parseFloat($("#mAmt").value);if(!amount||amount<=0){$("#mAmt").focus();return}
-    const t={id:uid(),type,amount,cat:selCat,note:$("#mNote").value.trim(),date:$("#mDate").value||todayKey()};
+    const acc=accounts.length?($("#mAcc").value||MAIN_ACC):MAIN_ACC;
+    const t={id:uid(),type,amount,cat:selCat,note:$("#mNote").value.trim(),date:$("#mDate").value||todayKey(),acc:acc};
     if(slipData){putPhoto(t.id,slipData);t.slip=true}
     txs.push(t);saveTx();curMonth=monthKey(t.date);
+    if(accFilter&&accFilter!==acc)accFilter=acc;   /* ตามไปดูบัญชีที่เพิ่งลงรายการ */
     renderMoney();closeSheet();toast("บันทึกแล้ว ✓")}}
 $("#addOut").onclick=()=>txModal("out");$("#addIn").onclick=()=>txModal("in");
 function slipModal(){openSheet(`<h3>อัปโหลดสลิป</h3>
@@ -1501,8 +1680,12 @@ function parseSCB(text){const clean=text.replace(/(\d),(?=\d{3}\b)/g,"$1");let a
     else if(/(pharmacy|watsons|boots|ยา|โรงพยาบาล)/i.test(text))cat="health";
     else if(/(netflix|spotify|cinema|major|movie|game|เกม)/i.test(text))cat="fun"}
   return{type,amount:amt,note,cat,date:todayKey(),raw:true}}
-$("#copySheet").onclick=()=>{const list=txs.filter(t=>monthKey(t.date)===curMonth).sort((a,b)=>a.date.localeCompare(b.date));
-  const rows=[["Date","Type","Category","Amount","Note"]];list.forEach(t=>rows.push([t.date,t.type==="in"?"รายรับ":"รายจ่าย",catOf(t.cat).nm,t.amount,t.note||""]));
+$("#copySheet").onclick=()=>{
+  const list=txs.filter(t=>monthKey(t.date)===curMonth&&accMatch(t)).map(t=>({d:t.date,r:[t.date,t.type==="in"?"รายรับ":"รายจ่าย",catOf(t.cat).nm,accOf(txAcc(t)).name,t.amount,t.note||""]}));
+  transfers.filter(f=>monthKey(f.date)===curMonth&&(!accFilter||f.from===accFilter||f.to===accFilter))
+    .forEach(f=>list.push({d:f.date,r:[f.date,"โอนเงิน","—",accOf(f.from).name+" → "+accOf(f.to).name,f.amount,f.note||""]}));
+  list.sort((a,b)=>a.d.localeCompare(b.d));
+  const rows=[["Date","Type","Category","Account","Amount","Note"]];list.forEach(x=>rows.push(x.r));
   const tsv=rows.map(r=>r.join("\t")).join("\n");const done=()=>toast("คัดลอกแล้ว — วางใน Google Sheets ได้เลย ✓");
   if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(tsv).then(done).catch(()=>fallbackCopy(tsv,done));else fallbackCopy(tsv,done)};
 function fallbackCopy(text,cb){const ta=document.createElement("textarea");ta.value=text;ta.style.position="fixed";ta.style.opacity="0";

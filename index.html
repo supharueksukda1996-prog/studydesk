@@ -578,13 +578,18 @@ body.lb-editing .nav{display:none}
 #lbEditBar .nav-cfg{background:var(--surface-2);color:var(--ink-2);border:1px solid var(--line-2)}
 #lbEditBar .done{background:var(--gold);color:#fff}
 /* nav config rows (in sheet) */
-.navrow{display:flex;align-items:center;gap:10px;padding:9px 11px;border:1px solid var(--line);border-radius:12px;margin-bottom:8px;background:var(--surface)}
-.navrow .ic{font-size:1.05rem;width:22px;text-align:center}
-.navrow .nm{flex:1;font-size:.88rem;font-weight:600}
-.navrow .tag{font-size:.64rem;font-weight:700;padding:3px 9px;border-radius:999px;background:var(--gold-soft);color:var(--gold-ink)}
+.navrow{display:flex;align-items:center;gap:7px;padding:9px 10px;border:1px solid var(--line);border-radius:12px;margin-bottom:8px;background:var(--surface)}
+.navrow .ic{font-size:1.05rem;width:20px;text-align:center;flex:none}
+.navrow .nm{flex:1;min-width:0;font-size:.88rem;font-weight:600}
+.navrow .nm small{display:block;font-weight:400;font-size:.66rem;color:var(--ink-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.navrow.off{opacity:.6}
+.navrow .tag{font-size:.62rem;font-weight:700;padding:3px 8px;border-radius:999px;background:var(--gold-soft);color:var(--gold-ink);flex:none}
 .navrow .tag.off{background:var(--surface-2);color:var(--ink-3)}
-.navrow .mv{border:1px solid var(--line-2);background:var(--surface-2);color:var(--ink-2);width:30px;height:30px;border-radius:8px;font-size:.9rem;flex:none}
+.navrow .mv{border:1px solid var(--line-2);background:var(--surface-2);color:var(--ink-2);width:28px;height:28px;border-radius:8px;font-size:.88rem;flex:none;padding:0}
 .navrow .mv:disabled{opacity:.32}
+.switch.sm{width:42px;height:25px}
+.switch.sm i::after{width:19px;height:19px}
+.switch.sm input[type=checkbox]:checked+i::after{transform:translateX(17px)}
 .grouplbl{font-size:.66rem;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);font-weight:700;margin:14px 2px 7px}
 </style>
 
@@ -1001,37 +1006,57 @@ const TAB_DEFS={
   workout:{nm:"Workout",ic:"🏋️",svg:'<path d="M6.5 6.5v11M3.5 9v6M17.5 6.5v11M20.5 9v6M6.5 12h11"/>'}
 };
 const TAB_IDS=["today","focus","habits","money","workout"];
+const TAB_CORE=["today"];   /* หน้าหลัก — ปิดไม่ได้ จะได้เหลือที่ให้กลับมาตั้งค่าเสมอ */
+/* hidden = ย้ายไปเมนู ••• เพิ่มเติม · off = ปิดฟีเจอร์ทั้งแท็บ (ข้อมูลยังอยู่ครบ) */
 function navCfg(){const c=store.get("sd_nav",{})||{};
   let order=(c.order||[]).filter(v=>TAB_IDS.includes(v));TAB_IDS.forEach(v=>{if(!order.includes(v))order.push(v)});
-  const hidden=(c.hidden||[]).filter(v=>TAB_IDS.includes(v));return{order,hidden}}
+  const hidden=(c.hidden||[]).filter(v=>TAB_IDS.includes(v));
+  const off=(c.off||[]).filter(v=>TAB_IDS.includes(v)&&!TAB_CORE.includes(v));
+  return{order,hidden,off}}
+const liveTabs=()=>{const c=navCfg();return c.order.filter(v=>!c.off.includes(v))};
+function setTabOn(v,on){if(TAB_CORE.includes(v))return;const c=navCfg();
+  c.off=on?c.off.filter(x=>x!==v):c.off.concat(c.off.includes(v)?[]:[v]);
+  saveNav(c);
+  if(!on&&curView()===v)switchTab(liveTabs()[0]||"today");else renderNav();
+  if(lbEditing)refreshEdit()}
 function saveNav(cfg){store.set("sd_nav",cfg)}
 function curView(){const v=$(".view.on");return v?v.id.replace("v-",""):"today"}
-function switchTab(v){if(!TAB_IDS.includes(v))return;
+function switchTab(v){if(!TAB_IDS.includes(v)||navCfg().off.includes(v))return;
   $$(".view").forEach(x=>x.classList.remove("on"));const el=$("#v-"+v);if(el)el.classList.add("on");
   $(".scroll").scrollTop=0;renderNav();
   if(v==="today")renderTasks();if(v==="focus"){renderBars();renderFocusTarget();renderPFocus()}if(v==="habits")renderHabits();
   if(v==="money")renderMoney();if(v==="workout")renderWorkout();
   if(lbEditing)refreshEdit()}
-function renderNav(){const{order,hidden}=navCfg(),cur=curView(),nav=$("#nav");
-  const bar=order.filter(v=>!hidden.includes(v));
+function renderNav(){const{hidden,off}=navCfg(),cur=curView(),nav=$("#nav");
+  const live=liveTabs();
+  let bar=live.filter(v=>!hidden.includes(v)),more=live.filter(v=>hidden.includes(v));
+  if(!bar.length){bar=live;more=[]}          /* กันแถบว่างเมื่อปิดแท็บจนเหลือแต่ของที่ซ่อนไว้ */
   let h=bar.map(v=>`<button data-v="${v}" class="${v===cur?"on":""}"><svg viewBox="0 0 24 24">${TAB_DEFS[v].svg}</svg>${TAB_DEFS[v].nm}</button>`).join("");
-  if(hidden.length)h+=`<button data-more="1" class="${hidden.includes(cur)?"on":""}"><svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg>เพิ่มเติม</button>`;
+  if(more.length)h+=`<button data-more="1" class="${more.includes(cur)?"on":""}"><svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg>เพิ่มเติม</button>`;
   nav.innerHTML=h;
   nav.querySelectorAll("[data-v]").forEach(b=>b.onclick=()=>switchTab(b.dataset.v));
   const mb=nav.querySelector("[data-more]");if(mb)mb.onclick=openMore}
-function openMore(){const{hidden}=navCfg();
-  openSheet(`<h3>เพิ่มเติม</h3>${hidden.map(v=>`<button class="photobtn" data-go="${v}">${TAB_DEFS[v].nm}</button>`).join("")}
+function openMore(){const{hidden,off}=navCfg();
+  openSheet(`<h3>เพิ่มเติม</h3>${hidden.filter(v=>!off.includes(v)).map(v=>`<button class="photobtn" data-go="${v}">${TAB_DEFS[v].nm}</button>`).join("")}
     <button class="photobtn" id="mNavCfg" style="margin-top:6px">📱 จัดแถบล่าง</button>
     <div class="row2" style="margin-top:12px"><button class="cancel" id="mCancel">ปิด</button></div>`);
   $("#mCancel").onclick=closeSheet;$("#mNavCfg").onclick=()=>{closeSheet();openNavCfg()};
   $$("#sheet [data-go]").forEach(b=>b.onclick=()=>{closeSheet();switchTab(b.dataset.go)})}
 function openNavCfg(){const cfg=navCfg();
-  const row=v=>{const inBar=!cfg.hidden.includes(v),i=cfg.order.indexOf(v);
-    return `<div class="navrow" data-v="${v}"><span class="ic">${TAB_DEFS[v].ic||"•"}</span><span class="nm">${TAB_DEFS[v].nm}</span>
-      <span class="tag ${inBar?"":"off"}">${inBar?"ในแถบ":"ซ่อน"}</span>
-      <button class="mv" data-up ${i===0?"disabled":""}>↑</button><button class="mv" data-down ${i===cfg.order.length-1?"disabled":""}>↓</button>
-      <button class="mv" data-tog>${inBar?"✕":"＋"}</button></div>`};
-  openSheet(`<h3>จัดแถบล่าง</h3><div class="hintline">เรียงลำดับปุ่ม และเลือกว่าปุ่มไหนอยู่ในแถบ ปุ่มที่ซ่อนจะไปอยู่ในเมนู ••• เพิ่มเติม</div>
+  const row=v=>{const off=cfg.off.includes(v),inBar=!cfg.hidden.includes(v),i=cfg.order.indexOf(v),core=TAB_CORE.includes(v);
+    const where=off?"ปิดอยู่ · ไม่แสดงในแอป":inBar?"อยู่ในแถบล่าง":"อยู่ในเมนู ••• เพิ่มเติม";
+    return `<div class="navrow${off?" off":""}" data-v="${v}">
+      <span class="ic">${TAB_DEFS[v].ic||"•"}</span>
+      <span class="nm">${TAB_DEFS[v].nm}<small>${where}</small></span>
+      <button class="mv" data-up ${i===0||off?"disabled":""} aria-label="เลื่อนขึ้น">↑</button>
+      <button class="mv" data-down ${i===cfg.order.length-1||off?"disabled":""} aria-label="เลื่อนลง">↓</button>
+      <button class="mv" data-tog ${off?"disabled":""} aria-label="${inBar?"ย้ายไปเมนูเพิ่มเติม":"ย้ายขึ้นแถบล่าง"}">${inBar?"✕":"＋"}</button>
+      ${core?`<span class="tag">หลัก</span>`:
+        `<label class="switch sm"><input type="checkbox" data-on ${off?"":"checked"} aria-label="เปิดหรือปิดแท็บ ${TAB_DEFS[v].nm}"><i></i></label>`}
+    </div>`};
+  openSheet(`<h3>แถบล่าง &amp; แท็บ</h3>
+    <div class="hintline">สวิตช์ = เปิด/ปิดฟีเจอร์นั้นทั้งแท็บ · ↑↓ เรียงลำดับ · ✕ ย้ายไปเมนู ••• เพิ่มเติม<br>
+      ปิดแล้วข้อมูลไม่หาย เปิดกลับมาเมื่อไหร่ก็ได้ที่หน้านี้</div>
     <div id="navRows" style="margin-top:12px">${cfg.order.map(row).join("")}</div>
     <div class="row2" style="margin-top:12px"><button class="save" id="mDone">เสร็จ</button></div>`);
   const rerun=()=>{closeSheet();openNavCfg()};
@@ -1041,8 +1066,11 @@ function openNavCfg(){const cfg=navCfg();
     r.querySelector("[data-down]").onclick=()=>{const c=navCfg(),i=c.order.indexOf(v);if(i<c.order.length-1){c.order.splice(i,1);c.order.splice(i+1,0,v);saveNav(c);renderNav();rerun()}};
     r.querySelector("[data-tog]").onclick=()=>{const c=navCfg();
       if(c.hidden.includes(v))c.hidden=c.hidden.filter(x=>x!==v);
-      else{if(c.order.filter(x=>!c.hidden.includes(x)).length<=1){toast("ต้องเหลือปุ่มในแถบอย่างน้อย 1");return}c.hidden.push(v)}
-      saveNav(c);renderNav();rerun()}})}
+      else{if(c.order.filter(x=>!c.hidden.includes(x)&&!c.off.includes(x)).length<=1){toast("ต้องเหลือปุ่มในแถบอย่างน้อย 1");return}c.hidden.push(v)}
+      saveNav(c);renderNav();rerun()};
+    const sw=r.querySelector("[data-on]");
+    if(sw)sw.onchange=e=>{setTabOn(v,e.target.checked);rerun();
+      toast(e.target.checked?`เปิด ${TAB_DEFS[v].nm} แล้ว ✓`:`ปิด ${TAB_DEFS[v].nm} แล้ว · ข้อมูลยังอยู่ครบ`)}})}
 
 /* ---- edit mode (จัดบล็อกในหน้า) ---- */
 let lbEditing=false;
@@ -2239,7 +2267,9 @@ function quickAddWorkout(){const inp=$("#wQuick"),name=inp.value.trim();
   const guess=EX_STARTER.find(s=>s.n===name);
   exerciseModal(null,name,ex=>logSheet(null,ex.id),guess&&guess.k)}
 function workoutSettings(){openSheet(`<h3>ตั้งค่าการออกกำลังกาย</h3>
-  <label class="fl">หน่วยน้ำหนัก</label>
+  <div class="togrow"><span>แสดงแท็บนี้ในแอป<small>ปิดแล้วข้อมูลยังอยู่ครบ · เปิดกลับที่ 👤 → แถบล่าง</small></span>
+    <label class="switch"><input type="checkbox" id="wsOn" checked aria-label="เปิดหรือปิดแท็บออกกำลังกาย"><i></i></label></div>
+  <label class="fl" style="margin-top:12px">หน่วยน้ำหนัก</label>
   <select id="wsUnit"><option value="kg"${wUnit==="kg"?" selected":""}>กิโลกรัม (kg)</option><option value="lb"${wUnit==="lb"?" selected":""}>ปอนด์ (lb)</option></select>
   <label class="fl">ติ๊กนิสัยอัตโนมัติเมื่อบันทึก</label>
   <select id="wsHabit"><option value="">— ไม่เชื่อม —</option>${habits.filter(h=>!h.finished).map(h=>`<option value="${esc(h.id)}"${wHabitLink===h.id?" selected":""}>${esc(h.name)}</option>`).join("")}</select>
@@ -2248,6 +2278,8 @@ function workoutSettings(){openSheet(`<h3>ตั้งค่าการออ�
   <button class="photobtn" id="wsBlocks">🧩 จัดบล็อกหน้านี้</button>
   <div class="hintline">ข้อมูลการออกกำลังกายอยู่ในไฟล์สำรอง และ sync ขึ้นคลาวด์เหมือนข้อมูลอื่น</div>
   <div class="row2"><button class="save" id="mDone">เสร็จ</button></div>`);
+  $("#wsOn").onchange=e=>{if(e.target.checked)return;closeSheet();setTabOn("workout",false);
+    toast("ปิดแท็บออกกำลังกายแล้ว · เปิดกลับที่ 👤 → แถบล่าง")};
   $("#wsUnit").onchange=e=>{wUnit=e.target.value;store.set("sd_w_unit",wUnit);renderWorkout()};
   $("#wsHabit").onchange=e=>{wHabitLink=e.target.value;store.set("sd_w_habit",wHabitLink)};
   $("#wsNew").onclick=()=>{closeSheet();exerciseModal()};
@@ -2320,7 +2352,8 @@ function openAccount(){const u=window.sdUser&&window.sdUser();const cfg=window.s
         <div class="hintline" style="margin-top:8px">ล็อกอินเพื่อ sync ข้อมูลข้าม iPhone ↔ คอมพิวเตอร์</div>`)
     :`<div class="hintline">ยังไม่ได้ตั้งค่า Firebase — ตอนนี้ข้อมูลเก็บในเครื่องนี้เท่านั้น (ดู README เพื่อเปิดล็อกอิน Gmail + sync)</div>`}</div>
     <label class="fl" style="margin-top:12px">ปรับแต่งหน้าตา</label>
-    <button class="photobtn" id="acCustomize">🧩 จัดบล็อก &amp; แถบล่าง</button>
+    <button class="photobtn" id="acCustomize">🧩 จัดบล็อกในแต่ละหน้า</button>
+    <button class="photobtn" id="acTabs">📱 แถบล่าง &amp; เปิด-ปิดแท็บ</button>
     <label class="fl" style="margin-top:12px">สำรอง / กู้คืนข้อมูล</label>
     <button class="photobtn" id="acExport">⬇️ ดาวน์โหลดไฟล์สำรอง (.json)</button>
     <button class="photobtn" id="acImport">⬆️ กู้คืนจากไฟล์</button>
@@ -2331,6 +2364,7 @@ function openAccount(){const u=window.sdUser&&window.sdUser();const cfg=window.s
     <div class="row2" style="margin-top:14px"><button class="cancel" id="mCancel">ปิด</button></div>`);
   $("#mCancel").onclick=closeSheet;
   $("#acCustomize").onclick=()=>{closeSheet();enterEdit()};
+  $("#acTabs").onclick=()=>{closeSheet();openNavCfg()};
   $("#acExport").onclick=exportBackup;
   $("#acImport").onclick=()=>$("#acFile").click();
   $("#acFile").onchange=e=>{const f=e.target.files[0];if(f)importBackup(f)};

@@ -392,6 +392,31 @@ a{color:inherit}
 .achcard .hdel{flex:none;border:none;background:none;color:var(--ink-3);font-size:.95rem;opacity:.5}
 
 /* ===== workout · ออกกำลังกาย ===== */
+/* routines · โปรแกรมฝึก */
+.rtrow{display:flex;align-items:center;gap:8px;padding:9px 10px;border-radius:11px;background:var(--surface-2);border:1px solid var(--line);margin-bottom:7px}
+.rtrow.done{border-color:var(--teal);background:var(--teal-soft)}
+.rtrow .ck{width:22px;height:22px;border-radius:50%;border:2px solid var(--line-2);flex:none;display:grid;place-items:center;font-size:.7rem;color:transparent}
+.rtrow.done .ck{background:var(--teal);border-color:var(--teal);color:#fff}
+.rtrow .dot{width:10px;height:10px;border-radius:50%;flex:none}
+.rtrow .nm{flex:1;min-width:0;font-size:.87rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rtrow .nm small{display:block;font-weight:400;font-size:.66rem;color:var(--ink-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rtrow button{flex:none;border:1px solid var(--line-2);background:var(--surface);color:var(--ink-2);height:29px;min-width:29px;padding:0 9px;border-radius:8px;font-size:.78rem;font-weight:700;margin:0}
+.rtrow .go{color:var(--teal)}.rtrow .rm{color:var(--rose)}
+.rtrow button:disabled{opacity:.32}
+.chip .cdone{margin-left:5px;font-size:.7rem;color:var(--teal);font-weight:700}
+.chip.on .cdone{color:#fff}
+/* compare chart legend */
+.lchart .mln{fill:none;stroke-width:2.2;stroke-linejoin:round;stroke-linecap:round}
+.lchart .mpt{stroke-width:1.6;fill:var(--surface)}
+.cmplg{display:flex;flex-direction:column;gap:7px;margin-top:12px}
+.cmplg .cl{display:flex;align-items:center;gap:8px;font-size:.78rem}
+.cmplg .cl .d{width:10px;height:10px;border-radius:50%;flex:none}
+.cmplg .cl .n{flex:1;min-width:0;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cmplg .cl .n small{display:block;font-weight:400;font-size:.66rem;color:var(--ink-3)}
+.cmplg .cl .v{flex:none;font-family:"IBM Plex Mono",monospace;color:var(--ink-2);font-variant-numeric:tabular-nums}
+.cmplg .cl .p{flex:none;min-width:56px;text-align:right;font-family:"IBM Plex Mono",monospace;font-weight:600;font-variant-numeric:tabular-nums}
+.cmplg .cl .p.up{color:var(--green)}.cmplg .cl .p.dn{color:var(--rose)}.cmplg .cl .p.fl{color:var(--ink-3)}
+
 .wsum{display:flex;gap:10px;margin-top:2px}
 .wsum .ws{flex:1;min-width:0;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-sm);padding:13px 9px;text-align:center;box-shadow:var(--shadow)}
 .wsum .ws b{display:block;font-family:"IBM Plex Mono",monospace;font-size:1.5rem;font-weight:600;line-height:1;color:var(--accent)}
@@ -427,6 +452,7 @@ a{color:inherit}
 .wrange button{border:none;background:none;color:var(--ink-3);font-size:.71rem;font-weight:700;padding:6px 10px;border-radius:8px}
 .wrange button.on{background:var(--surface);color:var(--ink);box-shadow:var(--shadow)}
 :root[data-theme="dark"] .wrange button.on,:root:not([data-theme="light"]) .wrange button.on{color:var(--gold)}
+.wrow2{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 .wtrend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:.76rem;color:var(--ink-3);margin-top:10px}
 .wtrend b{font-family:"IBM Plex Mono",monospace;color:var(--ink-2);font-variant-numeric:tabular-nums}
 .wtrend .up{color:var(--green)}.wtrend .dn{color:var(--rose)}
@@ -783,6 +809,11 @@ body.lb-editing .nav{display:none}
         <div class="chips" id="wSuggest"></div>
         <div class="wlist" id="wDayList"></div>
       </div>
+      <div class="lb" data-block="wroutine" data-core="0">
+        <div class="eyebrow">โปรแกรมฝึก · Routines <button class="linkbtn" id="wRtNew">＋ โปรแกรมใหม่</button></div>
+        <div class="chips" id="wRtChips"></div>
+        <div class="chips" id="wRtPreset" style="margin-top:8px"></div>
+      </div>
       <div class="lb" data-block="wstats" data-core="0">
         <div class="eyebrow">สรุป 7 วันล่าสุด</div>
         <div class="wsum" id="wStats"></div>
@@ -981,7 +1012,8 @@ const LB_DEFS={
     {id:"balance",nm:"รายรับ-รายจ่าย",ic:"💰",core:1},{id:"dashboard",nm:"แดชบอร์ด",ic:"📊"},
     {id:"trend",nm:"กราฟรายวัน",ic:"📈"},{id:"categories",nm:"ตามหมวด",ic:"🏷️"},
     {id:"transactions",nm:"รายการล่าสุด",ic:"🧾"}],
-  workout:[{id:"wlog",nm:"บันทึกรายวัน",ic:"📝",core:1},{id:"wstats",nm:"สรุป 7 วัน",ic:"📊"},
+  workout:[{id:"wlog",nm:"บันทึกรายวัน",ic:"📝",core:1},{id:"wroutine",nm:"โปรแกรมฝึก",ic:"🗂️"},
+    {id:"wstats",nm:"สรุป 7 วัน",ic:"📊"},
     {id:"wprogress",nm:"กราฟความก้าวหน้า",ic:"📈"},{id:"wvolume",nm:"ปริมาณต่อสัปดาห์",ic:"🗓️"},
     {id:"wex",nm:"คลังท่า",ic:"🏋️"},{id:"wbody",nm:"น้ำหนักตัว",ic:"⚖️"}]
 };
@@ -1952,13 +1984,17 @@ const EX_STARTER=[{n:"เบนช์เพรส",k:"strength",m:"อก"},{n:"
   {n:"บาร์เบลโรว์",k:"strength",m:"หลัง"},{n:"แลทพูลดาวน์",k:"strength",m:"หลัง"},
   {n:"ดัมเบลเคิร์ล",k:"strength",m:"แขน"},{n:"วิดพื้น",k:"reps",m:"อก"},
   {n:"ดึงข้อ",k:"reps",m:"หลัง"},{n:"แพลงก์",k:"time",m:"แกนกลาง"},
-  {n:"วิ่ง",k:"cardio",m:"คาร์ดิโอ"},{n:"ปั่นจักรยาน",k:"cardio",m:"คาร์ดิโอ"},{n:"ว่ายน้ำ",k:"cardio",m:"คาร์ดิโอ"}];
+  {n:"วิ่ง",k:"cardio",m:"คาร์ดิโอ"},{n:"ปั่นจักรยาน",k:"cardio",m:"คาร์ดิโอ"},{n:"ว่ายน้ำ",k:"cardio",m:"คาร์ดิโอ"},
+  {n:"ดิพ",k:"reps",m:"อก"},{n:"ไตรเซ็ปเพรสดาวน์",k:"strength",m:"แขน"},{n:"ลันจ์",k:"strength",m:"ขา"},
+  {n:"เลกเพรส",k:"strength",m:"ขา"},{n:"ฮิปทรัสต์",k:"strength",m:"ขา"},{n:"ซิทอัพ",k:"reps",m:"แกนกลาง"}];
 let exercises=store.get("sd_exercises",[]),wlogs=store.get("sd_wlogs",[]),wbody=store.get("sd_wbody",[]);
+let routines=store.get("sd_wroutines",[]);
 let wUnit=store.get("sd_w_unit","kg"),wHabitLink=store.get("sd_w_habit","");
 let wDay=todayKey(),wChartEx=store.get("sd_w_ex",""),wChartMetric=store.get("sd_w_metric",""),
     wRange=store.get("sd_w_range",90),wVolMetric=store.get("sd_w_vol","vol");
+let wChartMode=store.get("sd_w_mode","one"),wCmpEx=store.get("sd_w_cmp",[]),wCmpPct=store.get("sd_w_cmppct",true);
 const saveExercises=()=>store.set("sd_exercises",exercises),saveWlogs=()=>store.set("sd_wlogs",wlogs),
-      saveWbody=()=>store.set("sd_wbody",wbody);
+      saveWbody=()=>store.set("sd_wbody",wbody),saveRoutines=()=>store.set("sd_wroutines",routines);
 const exKind=k=>EX_KINDS[k]||EX_KINDS.strength;
 const exOf=id=>exercises.find(e=>e.id===id)||{id:id,name:"(ลบแล้ว)",kind:"strength",color:"#8A93A6"};
 const n1=n=>(Math.round((+n||0)*10)/10).toLocaleString();
@@ -2041,7 +2077,7 @@ function lineChart(pts,unit){
   return `<div class="lchart"><svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet" role="img"
     aria-label="กราฟความก้าวหน้า ${esc(unit||"")}">${grid}${yl}<path class="ar" d="${area}"/><path class="ln" d="${line}"/>${dots}${xl}</svg></div>`}
 
-function renderWorkout(){renderWDay();renderWStats();renderWProgress();renderWVolume();renderWEx();renderWBody()}
+function renderWorkout(){renderWDay();renderRoutines();renderWStats();renderWProgress();renderWVolume();renderWEx();renderWBody()}
 function renderWDayLabel(){const diff=Math.round((new Date(wDay+"T00:00")-new Date(todayKey()+"T00:00"))/DAY);
   const t=diff===0?"วันนี้":diff===1?"พรุ่งนี้":diff===-1?"เมื่อวาน":
     new Date(wDay+"T00:00").toLocaleDateString(undefined,{weekday:"short",day:"numeric",month:"short"});
@@ -2084,6 +2120,14 @@ function renderWStats(){const box=$("#wStats");if(!box)return;
 function renderWProgress(){const wrap=$("#wProg");if(!wrap)return;
   if(!exercises.length){wrap.innerHTML=`<div class="empty"><div class="big">📈</div>
     เพิ่มท่าออกกำลังกายแล้วบันทึกสัก 2 ครั้ง กราฟความก้าวหน้าจะขึ้นให้อัตโนมัติ</div>`;return}
+  const tabs=`<div class="wrange wmode">${[["one","ท่าเดียว"],["cmp","เทียบหลายท่า"]].map(m=>
+    `<button data-m="${m[0]}" class="${wChartMode===m[0]?"on":""}">${m[1]}</button>`).join("")}</div>`;
+  if(wChartMode==="cmp")drawWCompare(wrap,tabs);else drawWSingle(wrap,tabs);
+  $$("#wProg .wmode button").forEach(b=>b.onclick=()=>{wChartMode=b.dataset.m;store.set("sd_w_mode",wChartMode);renderWProgress()});
+  $$("#wProg .wrng button").forEach(b=>b.onclick=()=>{wRange=+b.dataset.r;store.set("sd_w_range",wRange);renderWProgress()})}
+const wRangeTabs=()=>`<div class="wrange wrng">${[30,90,365,0].map(r=>
+  `<button data-r="${r}" class="${wRange===r?"on":""}">${r?(r<365?r+" วัน":"1 ปี"):"ทั้งหมด"}</button>`).join("")}</div>`;
+function drawWSingle(wrap,tabs){
   const withData=exercises.filter(e=>wlogs.some(l=>l.exId===e.id));
   if(!exercises.some(e=>e.id===wChartEx))wChartEx=(withData[0]||exercises[0]).id;
   const ex=exOf(wChartEx),ms=wMetrics(ex.kind);
@@ -2092,22 +2136,62 @@ function renderWProgress(){const wrap=$("#wProg");if(!wrap)return;
   const pts=exSeries(wChartEx,wChartMetric,wRange),all=exSeries(wChartEx,wChartMetric,0);
   const best=all.length?Math.max(...all.map(p=>p.v)):0;
   let trend="";
-  if(pts.length>1){const d=pts[pts.length-1].v-pts[0].v,base=pts[0].v,pct=base?Math.round(d/base*100):0;
+  if(pts.length>1){const d=pts[pts.length-1].v-pts[0].v,base=pts[0].v,pcnt=base?Math.round(d/base*100):0;
     trend=`<span class="${d>=0?"up":"dn"}">${d>=0?"▲":"▼"} <b>${esc(n1(Math.abs(d)))} ${esc(unit)}</b>
-      ${base?`(${d>=0?"+":"−"}${Math.abs(pct)}%)`:""} ในช่วงนี้</span>`}
+      ${base?`(${d>=0?"+":"−"}${Math.abs(pcnt)}%)`:""} ในช่วงนี้</span>`}
   else if(pts.length===1)trend=`<span>มีข้อมูล 1 ครั้งในช่วงนี้ — บันทึกอีกครั้งแล้วจะเห็นเส้นแนวโน้ม</span>`;
-  wrap.innerHTML=`<div class="wpickrow">
+  wrap.innerHTML=tabs+`<div class="wpickrow">
       <select id="wpEx" aria-label="เลือกท่า">${exercises.map(e=>`<option value="${esc(e.id)}"${e.id===wChartEx?" selected":""}>${esc(e.name)}</option>`).join("")}</select>
       <select id="wpMetric" aria-label="เลือกค่าที่วัด">${ms.map(x=>`<option value="${x.id}"${x.id===wChartMetric?" selected":""}>${esc(x.nm)}</option>`).join("")}</select>
-    </div>
-    <div class="wrange">${[30,90,365,0].map(r=>`<button data-r="${r}" class="${wRange===r?"on":""}">${r?(r<365?r+" วัน":"1 ปี"):"ทั้งหมด"}</button>`).join("")}</div>
-    ${lineChart(pts,unit)}
-    <div class="wtrend">${trend}<span>ดีที่สุด <b>${esc(n1(best))} ${esc(unit)}</b></span><span>บันทึกแล้ว <b>${all.length}</b> ครั้ง</span></div>`;
+    </div>`+wRangeTabs()+lineChart(pts,unit)+
+    `<div class="wtrend">${trend}<span>ดีที่สุด <b>${esc(n1(best))} ${esc(unit)}</b></span><span>บันทึกแล้ว <b>${all.length}</b> ครั้ง</span></div>`;
   $("#wpEx").onchange=e=>{wChartEx=e.target.value;store.set("sd_w_ex",wChartEx);
     const k=exOf(wChartEx).kind;if(!wMetrics(k).some(x=>x.id===wChartMetric)){wChartMetric=wMetrics(k)[0].id;store.set("sd_w_metric",wChartMetric)}
     renderWProgress()};
-  $("#wpMetric").onchange=e=>{wChartMetric=e.target.value;store.set("sd_w_metric",wChartMetric);renderWProgress()};
-  $$("#wProg .wrange button").forEach(b=>b.onclick=()=>{wRange=+b.dataset.r;store.set("sd_w_range",wRange);renderWProgress()})}
+  $("#wpMetric").onchange=e=>{wChartMetric=e.target.value;store.set("sd_w_metric",wChartMetric);renderWProgress()}}
+/* เทียบหลายท่าในภาพเดียว — ท่าต่างชนิดกันเทียบเป็น % ความก้าวหน้าจากจุดเริ่มของช่วง */
+function drawWCompare(wrap,tabs){
+  const withData=exercises.filter(e=>wlogs.some(l=>l.exId===e.id));
+  if(!withData.length){wrap.innerHTML=tabs+`<div class="empty"><div class="big">📈</div>
+    ยังไม่มีบันทึก — ลงบันทึกสัก 2 ครั้งแล้วค่อยกลับมาเทียบกันครับ</div>`;return}
+  wCmpEx=wCmpEx.filter(id=>withData.some(e=>e.id===id));
+  if(!wCmpEx.length)wCmpEx=withData.slice(0,3).map(e=>e.id);
+  const kinds=new Set(wCmpEx.map(id=>exOf(id).kind)),sameKind=wCmpEx.length>0&&kinds.size===1;
+  if(sameKind){const k=exOf(wCmpEx[0]).kind;if(!wMetrics(k).some(m=>m.id===wChartMetric))wChartMetric=PR_OF[k]}
+  const metOf=id=>{const k=exOf(id).kind;
+    return sameKind&&wMetrics(k).some(m=>m.id===wChartMetric)?wMetric(k,wChartMetric):wMetric(k,PR_OF[k])};
+  const series=wCmpEx.map(id=>{const e=exOf(id),m=metOf(id);
+    return{id:id,name:e.name,color:e.color,unit:m.u(),metric:m.nm,pts:exSeries(id,m.id,wRange)}});
+  const sameUnit=new Set(series.map(s=>s.unit)).size===1&&series.length>0;
+  const pct=!sameUnit||wCmpPct;
+  const ms=sameKind?wMetrics(exOf(wCmpEx[0]).kind):null;
+  wrap.innerHTML=tabs
+    +`<div class="hintline" style="margin:2px 2px 8px">แตะเลือกท่าที่อยากเทียบ (สูงสุด 4 ท่า)</div>
+      <div class="chips" id="wCmpChips" style="margin-bottom:10px"></div>`
+    +(ms?`<div class="wpickrow"><select id="wpMetric" aria-label="เลือกค่าที่วัด">${ms.map(x=>
+        `<option value="${x.id}"${x.id===wChartMetric?" selected":""}>${esc(x.nm)}</option>`).join("")}</select></div>`:"")
+    +`<div class="wrow2">`+wRangeTabs()
+    +(sameUnit?`<div class="wrange wpct">${[[1,"%"],[0,"ค่าจริง"]].map(o=>
+        `<button data-p="${o[0]}" class="${(pct?1:0)===o[0]?"on":""}">${o[1]}</button>`).join("")}</div>`:"")
+    +`</div>`
+    +multiChart(series,pct)
+    +(pct?`<div class="hintline" style="margin:8px 2px 0">100% = ค่าแรกของแต่ละท่าในช่วงที่เลือก${sameUnit?"":" · หน่วยต่างกันจึงเทียบเป็น %"}</div>`:"")
+    +`<div class="cmplg">${series.map(s=>{const p=s.pts,last=p.length?p[p.length-1].v:0,base=p.length?p[0].v:0;
+        const d=base?Math.round((last-base)/base*100):0,cls=p.length<2?"fl":d>0?"up":d<0?"dn":"fl";
+        return `<div class="cl"><span class="d" style="background:${s.color}"></span>
+          <span class="n">${esc(s.name)}<small>${esc(s.metric)}</small></span>
+          <span class="v">${p.length?esc(n1(last))+" "+esc(s.unit):"ไม่มีข้อมูล"}</span>
+          <span class="p ${cls}">${p.length>1?(d>0?"+":d<0?"−":"±")+Math.abs(d)+"%":"—"}</span></div>`}).join("")}</div>`;
+  const box=$("#wCmpChips");
+  withData.forEach(e=>{const on=wCmpEx.includes(e.id),b=document.createElement("button");
+    b.className="chip"+(on?" on":"");
+    b.innerHTML=`<span class="cd" style="background:${e.color}"></span>${esc(e.name)}`;
+    b.onclick=()=>{if(on)wCmpEx=wCmpEx.filter(x=>x!==e.id);
+      else{if(wCmpEx.length>=4){toast("เทียบได้สูงสุด 4 ท่า");return}wCmpEx=wCmpEx.concat([e.id])}
+      store.set("sd_w_cmp",wCmpEx);renderWProgress()};
+    box.appendChild(b)});
+  const sel=$("#wpMetric");if(sel)sel.onchange=e=>{wChartMetric=e.target.value;store.set("sd_w_metric",wChartMetric);renderWProgress()};
+  $$("#wProg .wpct button").forEach(b=>b.onclick=()=>{wCmpPct=b.dataset.p==="1";store.set("sd_w_cmppct",wCmpPct);renderWProgress()})}
 function renderWVolume(){const chart=$("#wVolChart");if(!chart)return;
   const sel=$("#wVolSel");if(sel)sel.value=wVolMetric;
   chart.innerHTML="";const cur=mondayOf(todayKey()),cols=[];
@@ -2148,8 +2232,10 @@ function renderWEx(){const list=$("#wExList");if(!list)return;list.innerHTML="";
 function deleteExercise(e){const n=exLogs(e.id).length;
   confirmSheet(`ลบท่า "${e.name}"?`+(n?` บันทึก ${n} ครั้งของท่านี้จะถูกลบไปด้วย`:""),()=>{
     exercises=exercises.filter(x=>x.id!==e.id);wlogs=wlogs.filter(l=>l.exId!==e.id);
+    routines.forEach(r=>{r.exIds=(r.exIds||[]).filter(id=>id!==e.id)});
+    wCmpEx=wCmpEx.filter(id=>id!==e.id);store.set("sd_w_cmp",wCmpEx);
     if(wChartEx===e.id){wChartEx="";store.set("sd_w_ex","")}
-    saveExercises();saveWlogs();renderWorkout();toast("ลบท่าแล้ว")},"ลบท่านี้")}
+    saveExercises();saveWlogs();saveRoutines();renderWorkout();toast("ลบท่าแล้ว")},"ลบท่านี้")}
 
 function exerciseModal(e,preName,after,preKind){const edit=!!e,cur=e||{};
   let kind=cur.kind||preKind||"strength",color=cur.color||EX_COLORS[exercises.length%EX_COLORS.length];
@@ -2305,15 +2391,148 @@ function renderWBody(){const chart=$("#wBodyChart"),listEl=$("#wBodyList");if(!c
       <button class="rm" aria-label="ลบรายการนี้">✕</button>`;
     row.querySelector(".rm").onclick=()=>{wbody=wbody.filter(x=>x.id!==b.id);saveWbody();renderWBody()};
     listEl.appendChild(row)})}
-$("#wPrev").onclick=()=>{wDay=shiftDay(wDay,-1);renderWDay();renderWBody()};
-$("#wNext").onclick=()=>{wDay=shiftDay(wDay,1);renderWDay();renderWBody()};
-$("#wToday").onclick=()=>{wDay=todayKey();renderWDay();renderWBody()};
-$("#wLabel").onclick=()=>openDatePicker({cur:()=>wDay,pick:k=>{wDay=k;renderWDay();renderWBody()},
+
+/* ---- โปรแกรมฝึก (routines) · sd_wroutines:[{id,name,exIds}] ---- */
+const ROUTINE_PRESETS=[
+  {n:"Push day",ex:["เบนช์เพรส","โอเวอร์เฮดเพรส","ดิพ","ไตรเซ็ปเพรสดาวน์"]},
+  {n:"Pull day",ex:["ดึงข้อ","บาร์เบลโรว์","แลทพูลดาวน์","ดัมเบลเคิร์ล"]},
+  {n:"Leg day",ex:["สควอท","เดดลิฟต์","ลันจ์","เลกเพรส"]},
+  {n:"Full body",ex:["สควอท","เบนช์เพรส","บาร์เบลโรว์","แพลงก์"]},
+  {n:"คาร์ดิโอ",ex:["วิ่ง","ปั่นจักรยาน"]}];
+const rtLogged=(exId,date)=>wlogs.find(l=>l.exId===exId&&l.date===date)||null;
+const rtDone=r=>(r.exIds||[]).filter(id=>rtLogged(id,wDay)).length;
+function renderRoutines(){const box=$("#wRtChips");if(!box)return;box.innerHTML="";
+  routines.forEach(r=>{const tot=(r.exIds||[]).length,done=rtDone(r);
+    const b=document.createElement("button");b.className="chip"+(tot&&done===tot?" on":"");
+    b.innerHTML=`${esc(r.name)}<span class="cbadge">${done}/${tot}</span>`+(tot&&done===tot?`<span class="cdone">✓</span>`:"");
+    b.onclick=()=>routineSheet(r);box.appendChild(b)});
+  const nb=document.createElement("button");nb.className="chip add";nb.textContent="＋ โปรแกรมใหม่";
+  nb.onclick=()=>routineEditor();box.appendChild(nb);
+  const pre=$("#wRtPreset");pre.innerHTML="";
+  const left=ROUTINE_PRESETS.filter(pr=>!routines.some(r=>r.name===pr.n));
+  pre.hidden=!left.length;
+  left.forEach(pr=>{const b=document.createElement("button");b.className="chip add";
+    b.innerHTML=`＋ ${esc(pr.n)}<span class="cbadge">${pr.ex.length}</span>`;
+    b.onclick=()=>addRoutinePreset(pr);pre.appendChild(b)})}
+/* เทมเพลตสำเร็จรูป — สร้างท่าที่ยังไม่มีในคลังให้อัตโนมัติ */
+function addRoutinePreset(pr){const ids=pr.ex.map(n=>{let e=exercises.find(x=>x.name===n);
+  if(!e){const d=EX_STARTER.find(x=>x.n===n)||{k:"strength",m:""};
+    e={id:uid(),name:n,kind:d.k,mus:d.m,color:EX_COLORS[exercises.length%EX_COLORS.length],note:""};exercises.push(e)}
+  return e.id});
+  routines.push({id:uid(),name:pr.n,exIds:ids});saveExercises();saveRoutines();renderWorkout();
+  toast(`เพิ่มโปรแกรม ${pr.n} แล้ว ✓ แตะเพื่อเริ่มบันทึก`)}
+function routineSheet(r){const ids=r.exIds||[],done=rtDone(r);
+  const rest=ids.filter(id=>!rtLogged(id,wDay)&&lastLog(id));
+  openSheet(`<h3>${esc(r.name)}</h3>
+    <div class="hintline">${esc(dfmtShort(wDay))} · ลงบันทึกแล้ว ${done}/${ids.length} ท่า — แตะท่าเพื่อกรอกหรือแก้ตัวเลข</div>
+    <div id="rtRows"></div>
+    ${rest.length?`<button class="photobtn" id="rtAll">↺ ลงท่าที่เหลือจากครั้งล่าสุด (${rest.length} ท่า)</button>`:""}
+    <button class="photobtn" id="rtEdit">⚙ แก้ไขโปรแกรมนี้</button>
+    <div class="row2"><button class="cancel" id="mCancel">ปิด</button></div>`);
+  const box=$("#rtRows");
+  if(!ids.length)box.innerHTML=`<div class="hintline">ยังไม่มีท่าในโปรแกรมนี้ — กด ⚙ แก้ไขโปรแกรม เพื่อเพิ่มท่า</div>`;
+  ids.forEach(id=>{const e=exOf(id),lg=rtLogged(id,wDay),prev=lastLog(id);
+    const row=document.createElement("div");row.className="rtrow"+(lg?" done":"");
+    const sub=lg?wSum(e.kind,lg.sets):prev?("ครั้งล่าสุด "+dfmtShort(prev.date)+" · "+(prev.sets||[]).map(x=>setPlain(e.kind,x)).join(", ")):"ยังไม่เคยบันทึกท่านี้";
+    row.innerHTML=`<span class="ck">✓</span><span class="dot" style="background:${e.color}"></span>
+      <span class="nm">${esc(e.name)}<small>${esc(sub)}</small></span>
+      <button class="go">${lg?"แก้":"บันทึก"}</button>`;
+    row.querySelector(".go").onclick=()=>{closeSheet();logSheet(lg,id)};
+    row.querySelector(".nm").onclick=()=>{closeSheet();logSheet(lg,id)};
+    box.appendChild(row)});
+  const all=$("#rtAll");
+  if(all)all.onclick=()=>{rest.forEach(id=>{const prev=lastLog(id);
+      wlogs.push({id:uid(),exId:id,date:wDay,sets:(prev.sets||[]).map(x=>Object.assign({},x)),note:""})});
+    saveWlogs();
+    if(wHabitLink){const h=habits.find(x=>x.id===wHabitLink);
+      if(h&&!h.log[wDay]){h.log[wDay]=true;saveHabits();renderHabits();renderTodayHabits()}}
+    closeSheet();renderWorkout();toast(`ลงบันทึก ${rest.length} ท่าแล้ว ✓ แตะการ์ดเพื่อแก้ตัวเลข`)};
+  $("#rtEdit").onclick=()=>{closeSheet();routineEditor(r)};
+  $("#mCancel").onclick=closeSheet}
+function routineEditor(r){const edit=!!r;let ids=(r&&r.exIds?r.exIds.slice():[]).filter(id=>exercises.some(e=>e.id===id));
+  openSheet(`<h3>${edit?"แก้ไขโปรแกรม":"โปรแกรมใหม่"}</h3>
+    <label class="fl">ชื่อโปรแกรม</label>
+    <input id="rtName" maxlength="30" placeholder="เช่น Push day, ขา, Full body" value="${edit?esc(r.name):""}">
+    <label class="fl">ท่าในโปรแกรม (<span id="rtN">0</span>)</label>
+    <div id="rtSel"></div>
+    <label class="fl">แตะเพื่อเพิ่มท่า</label>
+    <div class="chips" id="rtAddChips" style="margin-bottom:10px"></div>
+    <button class="photobtn" id="rtNewEx">＋ สร้างท่าใหม่</button>
+    ${edit?`<button class="photobtn" id="rtDel" style="color:var(--rose);border-color:var(--rose)">🗑 ลบโปรแกรมนี้</button>`:""}
+    <div class="row2"><button class="cancel" id="mCancel">ยกเลิก</button><button class="save" id="mSave">บันทึก</button></div>`);
+  const draw=()=>{const sel=$("#rtSel");sel.innerHTML="";$("#rtN").textContent=ids.length;
+    if(!ids.length)sel.innerHTML=`<div class="hintline">ยังไม่ได้เลือกท่า — แตะจากรายการด้านล่างได้เลย</div>`;
+    ids.forEach((id,i)=>{const e=exOf(id),row=document.createElement("div");row.className="rtrow";
+      row.innerHTML=`<span class="dot" style="background:${e.color}"></span>
+        <span class="nm">${i+1}. ${esc(e.name)}<small>${esc(exKind(e.kind).nm)}</small></span>
+        <button class="up" ${i===0?"disabled":""} aria-label="เลื่อนขึ้น">↑</button>
+        <button class="dn" ${i===ids.length-1?"disabled":""} aria-label="เลื่อนลง">↓</button>
+        <button class="rm" aria-label="เอาออก">✕</button>`;
+      row.querySelector(".up").onclick=()=>{ids.splice(i-1,0,ids.splice(i,1)[0]);draw()};
+      row.querySelector(".dn").onclick=()=>{ids.splice(i+1,0,ids.splice(i,1)[0]);draw()};
+      row.querySelector(".rm").onclick=()=>{ids.splice(i,1);draw()};
+      sel.appendChild(row)});
+    const box=$("#rtAddChips");box.innerHTML="";
+    const left=exercises.filter(e=>!ids.includes(e.id));
+    if(!left.length)box.innerHTML=`<span class="hintline" style="margin:0">เลือกครบทุกท่าในคลังแล้ว</span>`;
+    left.forEach(e=>{const b=document.createElement("button");b.className="chip";
+      b.innerHTML=`<span class="cd" style="background:${e.color}"></span>${esc(e.name)}`;
+      b.onclick=()=>{ids.push(e.id);draw()};box.appendChild(b)})};
+  draw();
+  $("#rtNewEx").onclick=()=>{closeSheet();exerciseModal(null,"",ex=>{
+    const keep=ids.concat([ex.id]);
+    if(edit){r.exIds=keep;saveRoutines();routineEditor(r)}
+    else routineEditor({id:null,name:$("#rtName")?$("#rtName").value:"",exIds:keep})})};
+  if(edit)$("#rtDel").onclick=()=>{closeSheet();
+    confirmSheet(`ลบโปรแกรม "${r.name}"? ท่าและบันทึกทั้งหมดยังอยู่ครบ`,()=>{
+      routines=routines.filter(x=>x.id!==r.id);saveRoutines();renderWorkout();toast("ลบโปรแกรมแล้ว")},"ลบโปรแกรม")};
+  $("#mCancel").onclick=closeSheet;
+  $("#mSave").onclick=()=>{const nm=$("#rtName").value.trim();
+    if(!nm){$("#rtName").focus();toast("ตั้งชื่อโปรแกรมก่อนนะครับ");return}
+    if(!ids.length){toast("เลือกท่าอย่างน้อย 1 ท่า");return}
+    if(edit&&r.id){r.name=nm;r.exIds=ids}else routines.push({id:uid(),name:nm,exIds:ids});
+    saveRoutines();closeSheet();renderWorkout();toast(edit?"บันทึกแล้ว ✓":"สร้างโปรแกรมแล้ว ✓")}}
+
+/* ---- กราฟเทียบหลายท่า ---- */
+const dayNum=ds=>Math.round(new Date(ds+"T00:00").getTime()/DAY);
+/* แกน X เรียงตามวันที่จริง เพราะแต่ละท่าบันทึกคนละวันกัน */
+function multiChart(series,pct){
+  const live=series.filter(s=>s.pts.length);
+  if(!live.length)return `<div class="empty" style="padding:24px">ยังไม่มีข้อมูลในช่วงนี้</div>`;
+  const W=320,H=180,L=38,R=10,T=14,B=24;
+  const val=(s,p)=>pct?(s.pts[0].v?p.v/s.pts[0].v*100:100):p.v;
+  const ts=[],vals=[];
+  live.forEach(s=>s.pts.forEach(p=>{ts.push(dayNum(p.d));vals.push(val(s,p))}));
+  const t0=Math.min(...ts),t1=Math.max(...ts);
+  let lo=Math.min(...vals),hi=Math.max(...vals);
+  if(hi===lo){const pad=Math.abs(hi)*.12||1;lo-=pad;hi+=pad}else{const pad=(hi-lo)*.15;lo-=pad;hi+=pad}
+  if(lo<0&&Math.min(...vals)>=0)lo=0;
+  const X=t=>t1===t0?L+(W-L-R)/2:L+(t-t0)/(t1-t0)*(W-L-R);
+  const Y=v=>T+(H-T-B)*(1-(v-lo)/(hi-lo||1));
+  let grid="",yl="";
+  for(let g=0;g<=2;g++){const v=lo+(hi-lo)*g/2,y=Y(v).toFixed(1);
+    grid+=`<line class="grid" x1="${L}" y1="${y}" x2="${W-R}" y2="${y}"/>`;
+    yl+=`<text class="yl" x="${L-5}" y="${(+y+3).toFixed(1)}" text-anchor="end">${esc(n1(v))}${pct?"%":""}</text>`}
+  let paths="";
+  live.forEach(s=>{const d=s.pts.map((p,i)=>(i?"L":"M")+X(dayNum(p.d)).toFixed(1)+" "+Y(val(s,p)).toFixed(1)).join(" ");
+    paths+=`<path class="mln" d="${d}" stroke="${s.color}"/>`;
+    if(s.pts.length<=30)paths+=s.pts.map(p=>`<circle class="mpt" cx="${X(dayNum(p.d)).toFixed(1)}" cy="${Y(val(s,p)).toFixed(1)}" r="2.6" stroke="${s.color}"><title>${esc(s.name)} · ${esc(dfmtShort(p.d))} · ${esc(n1(p.v))} ${esc(s.unit)}</title></circle>`).join("")});
+  const d0=live.map(s=>s.pts[0].d).sort()[0],d1=live.map(s=>s.pts[s.pts.length-1].d).sort().pop();
+  const xl=`<text class="xl" x="${L}" y="${H-6}">${esc(dfmtShort(d0))}</text>`+
+    (d1!==d0?`<text class="xl" x="${W-R}" y="${H-6}" text-anchor="end">${esc(dfmtShort(d1))}</text>`:"");
+  return `<div class="lchart"><svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet" role="img"
+    aria-label="กราฟเทียบหลายท่า">${grid}${yl}${paths}${xl}</svg></div>`}
+const wGoDay=d=>{wDay=d;renderWDay();renderRoutines();renderWBody()};
+$("#wPrev").onclick=()=>wGoDay(shiftDay(wDay,-1));
+$("#wNext").onclick=()=>wGoDay(shiftDay(wDay,1));
+$("#wToday").onclick=()=>wGoDay(todayKey());
+$("#wLabel").onclick=()=>openDatePicker({cur:()=>wDay,pick:wGoDay,
   dots:()=>new Set(wlogs.map(l=>l.date))});
 $("#wCfg").onclick=workoutSettings;
 $("#wAdd").onclick=quickAddWorkout;
 $("#wQuick").addEventListener("keydown",e=>{if(e.key==="Enter")quickAddWorkout()});
 $("#wExNew").onclick=()=>exerciseModal();
+$("#wRtNew").onclick=()=>routineEditor();
 $("#wVolSel").onchange=e=>{wVolMetric=e.target.value;store.set("sd_w_vol",wVolMetric);renderWVolume()};
 $("#wBodyAdd").onclick=addBodyWeight;
 $("#wBodyIn").addEventListener("keydown",e=>{if(e.key==="Enter")addBodyWeight()});

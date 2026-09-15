@@ -392,6 +392,25 @@ a{color:inherit}
 .achcard .hdel{flex:none;border:none;background:none;color:var(--ink-3);font-size:.95rem;opacity:.5}
 
 /* ===== workout · ออกกำลังกาย ===== */
+/* sheet ขนาดใหญ่ — ใช้ตอนอยู่ยิม ตัวอักษรชัด ปุ่มกดง่าย */
+.sheet.big{min-height:76vh;display:flex;flex-direction:column}
+.sheet.big h3{font-size:1.4rem;margin-bottom:12px}
+.sheet.big .hintline{font-size:.86rem;margin-bottom:14px}
+.sheet.big .photobtn{padding:15px;font-size:.98rem;border-radius:13px}
+.sheet.big .row2{margin-top:auto;padding-top:10px}
+.sheet.big .row2 button{padding:16px;font-size:1rem}
+.sheet.big label.fl{font-size:.78rem}
+.sheet.big input,.sheet.big select,.sheet.big textarea{padding:14px;font-size:1.02rem}
+.sheet.big .rtrow{padding:13px 13px;gap:11px;border-radius:13px;margin-bottom:9px}
+.sheet.big .rtrow .nm{font-size:1.04rem}
+.sheet.big .rtrow .nm small{font-size:.8rem;margin-top:2px}
+.sheet.big .rtrow button{height:40px;min-width:40px;padding:0 15px;font-size:.92rem;border-radius:10px}
+.sheet.big .rtrow .ck{width:27px;height:27px;font-size:.84rem}
+.sheet.big .setrow input{padding:14px 8px;font-size:1.12rem}
+.sheet.big .setrow .sn{font-size:.9rem;width:24px}
+.sheet.big .setrow .u{font-size:.82rem}
+.sheet.big .restrow{font-size:.86rem}
+.sheet.big .restrow button{font-size:.86rem;padding:10px 14px}
 /* routines · โปรแกรมฝึก */
 .rtrow{display:flex;align-items:center;gap:8px;padding:9px 10px;border-radius:11px;background:var(--surface-2);border:1px solid var(--line);margin-bottom:7px}
 .rtrow.done{border-color:var(--teal);background:var(--teal-soft)}
@@ -403,6 +422,12 @@ a{color:inherit}
 .rtrow button{flex:none;border:1px solid var(--line-2);background:var(--surface);color:var(--ink-2);height:29px;min-width:29px;padding:0 9px;border-radius:8px;font-size:.78rem;font-weight:700;margin:0}
 .rtrow .go{color:var(--teal)}.rtrow .rm{color:var(--rose)}
 .rtrow button:disabled{opacity:.32}
+/* สร้างโปรแกรมใหม่จากในชีตเพิ่มท่า โดยไม่ต้องเปลี่ยนหน้า */
+.rtnew{display:flex;align-items:center;gap:6px;flex:1;min-width:0}
+.rtnew input{margin:0;flex:1;min-width:0;padding:9px 11px;font-size:.88rem;border-radius:10px}
+.rtnew button{flex:none;border:1px solid var(--line-2);background:var(--surface);color:var(--ink-2);
+  width:34px;height:34px;border-radius:10px;font-size:.9rem;font-weight:700}
+.rtnew button.ok{background:var(--ink);color:var(--surface);border-color:var(--ink)}
 .chip .cdone{margin-left:5px;font-size:.7rem;color:var(--teal);font-weight:700}
 .chip.on .cdone{color:#fff}
 /* compare chart legend */
@@ -637,7 +662,8 @@ body.lb-editing .nav{display:none}
         <div class="exam-strip" id="examStrip"></div>
       </div>
       <div class="lb" data-block="projects" data-core="0">
-        <div class="eyebrow">Projects <select id="projTypeFilter" class="typesel"></select></div>
+        <div class="eyebrow">Projects <select id="projTypeFilter" class="typesel"></select>
+          <button class="linkbtn" id="projManage">⚙ จัดการ</button></div>
         <div class="chips" id="projChips"></div>
       </div>
       <div class="lb" data-block="tasks" data-core="1">
@@ -838,6 +864,7 @@ body.lb-editing .nav{display:none}
       </div>
       <div class="lb" data-block="wex" data-core="0">
         <div class="eyebrow">คลังท่า · Exercises <button class="linkbtn" id="wExNew">＋ ท่าใหม่</button></div>
+        <div class="chips" id="wExFilter" style="margin-bottom:10px"></div>
         <div class="wlist" id="wExList"></div>
         <div class="chips" id="wStarter" style="margin-top:10px"></div>
       </div>
@@ -1283,6 +1310,29 @@ function projectEdit(p){openSheet(`<h3>แก้ไขโปรเจกต์</
   let col=p.color;$("#peColor").onclick=e=>{const b=e.target.closest("button");if(!b)return;col=b.dataset.c;$$("#peColor button").forEach(x=>{x.style.outline="";x.style.outlineOffset=""});b.style.outline="3px solid var(--ink)";b.style.outlineOffset="2px"};
   $("#peDel").onclick=()=>{closeSheet();confirmSheet(`ลบโปรเจกต์ "${p.name}"? งานจะยังอยู่ แต่ไม่ผูกกับโปรเจกต์นี้`,()=>{projects=projects.filter(x=>x.id!==p.id);tasks.forEach(t=>{if(t.proj===p.id)t.proj=""});saveProjects();saveTasks();projFilter="";renderProjChips();renderTasks()})};
   $("#peSave").onclick=()=>{p.name=$("#peName").value.trim()||p.name;p.type=$("#peType").value;p.desc=$("#peDesc").value.trim();p.color=col;saveProjects();closeSheet();renderProjChips();renderTasks();toast("บันทึกแล้ว ✓")}}
+/* จัดการโปรเจกต์ที่เคยตั้งไว้ — เปลี่ยนชื่อ/ชนิด/สี หรือลบ ได้ตลอดเวลา */
+function projectsSheet(){openSheet(`<h3>จัดการโปรเจกต์</h3>
+  <div class="hintline">แตะ <b>แก้</b> เพื่อเปลี่ยนชื่อ ชนิด คำอธิบาย หรือสีของโปรเจกต์ที่เคยตั้งไว้ · แตะชื่อเพื่อเปิดดูงานย่อย</div>
+  <div class="acclist" id="pmList"></div>
+  <button class="photobtn" id="pmAdd">＋ โปรเจกต์ใหม่</button>
+  <div class="row2"><button class="cancel" id="mCancel">ปิด</button></div>`);
+  const L=$("#pmList");
+  if(!projects.length)L.innerHTML=`<div class="hintline" style="text-align:center;padding:10px;margin:0">ยังไม่มีโปรเจกต์</div>`;
+  projects.forEach(p=>{const n=tasks.filter(t=>t.proj===p.id&&!t.done).length;
+    const row=document.createElement("div");row.className="accrow";
+    row.innerHTML=`<span class="dot" style="background:${p.color}"></span>
+      <span class="nm" role="button">${esc(p.name)}<small>${esc(p.type||"ไม่ระบุชนิด")}${n?" · ค้าง "+n+" งาน":" · ไม่มีงานค้าง"}</small></span>
+      <button class="ed" aria-label="แก้ไขโปรเจกต์">แก้</button><button class="rm" aria-label="ลบโปรเจกต์">✕</button>`;
+    row.querySelector(".nm").onclick=()=>projectSheet(p);
+    row.querySelector(".ed").onclick=()=>projectEdit(p);
+    row.querySelector(".rm").onclick=()=>{closeSheet();
+      confirmSheet(`ลบโปรเจกต์ "${p.name}"? งานจะยังอยู่ แต่จะไม่ผูกกับโปรเจกต์นี้`,()=>{
+        projects=projects.filter(x=>x.id!==p.id);tasks.forEach(t=>{if(t.proj===p.id)t.proj=""});
+        saveProjects();saveTasks();if(projFilter===p.id)projFilter="";renderProjChips();renderTasks();toast("ลบโปรเจกต์แล้ว")})};
+    L.appendChild(row)});
+  $("#pmAdd").onclick=()=>{closeSheet();projModal()};
+  $("#mCancel").onclick=closeSheet}
+$("#projManage").onclick=projectsSheet;
 const QCYCLE=["q1","q2","q3","q4"];
 function projectSheet(p){
   openSheet(`<div style="display:flex;align-items:center;justify-content:space-between;gap:10px">
@@ -1797,27 +1847,34 @@ function deleteAccount(a){const bal=accBalance(a.id),n=txs.filter(t=>txAcc(t)===
     saveTx();saveTransfers();saveAccounts();closeSheet();renderMoney();
     toast("ลบบัญชีแล้ว · เงินกลับเข้าบัญชีหลัก ✓")},"ลบบัญชี")}
 
-function transferModal(){const list=allAccounts();
+function transferModal(ed){const list=allAccounts();
   if(list.length<2){toast("สร้างบัญชีย่อยก่อนถึงจะโอนได้");return}
-  const from0=accFilter||MAIN_ACC,to0=(list.find(a=>a.id!==from0)||{}).id;
-  openSheet(`<h3>⇄ โอนเงินระหว่างบัญชี</h3>
+  const from0=ed?ed.from:(accFilter||MAIN_ACC),to0=ed?ed.to:(list.find(a=>a.id!==from0)||{}).id;
+  openSheet(`<h3>${ed?"แก้ไขการโอน":"⇄ โอนเงินระหว่างบัญชี"}</h3>
     <div class="hintline">ย้ายเงินระหว่างบัญชีของคุณเอง — ไม่นับเป็นรายรับหรือรายจ่าย ยอดรวมทุกบัญชีจึงไม่เปลี่ยน</div>
-    <label class="fl">จำนวนเงิน (บาท)</label><input class="amtin" id="tfAmt" type="number" inputmode="decimal" placeholder="0">
+    <label class="fl">จำนวนเงิน (บาท)</label><input class="amtin" id="tfAmt" type="number" inputmode="decimal" placeholder="0" value="${ed?ed.amount:""}">
     <label class="fl">จากบัญชี</label><select id="tfFrom">${accOpts(from0)}</select>
     <label class="fl">ไปยังบัญชี</label><select id="tfTo">${accOpts(to0)}</select>
     <div class="hintline" id="tfHint"></div>
-    <label class="fl">วันที่</label><input type="date" id="tfDate" value="${todayKey()}">
-    <label class="fl">บันทึก (ไม่บังคับ)</label><input id="tfNote" maxlength="60" placeholder="เช่น กันเงินค่าหอ">
-    <div class="row2"><button class="cancel" id="mCancel">Cancel</button><button class="save" id="mSave">โอนเงิน</button></div>`);
+    <label class="fl">วันที่</label><input type="date" id="tfDate" value="${ed?ed.date:todayKey()}">
+    <label class="fl">บันทึก (ไม่บังคับ)</label><input id="tfNote" maxlength="60" placeholder="เช่น กันเงินค่าหอ" value="${ed?esc(ed.note||""):""}">
+    ${ed?`<button class="photobtn" id="tfDel" style="color:var(--rose);border-color:var(--rose)">🗑 ลบการโอนนี้</button>`:""}
+    <div class="row2"><button class="cancel" id="mCancel">ยกเลิก</button><button class="save" id="mSave">${ed?"บันทึก":"โอนเงิน"}</button></div>`);
   const hint=()=>{const f=$("#tfFrom").value,b=accBalance(f);
     $("#tfHint").innerHTML=`คงเหลือใน ${esc(accOf(f).name)} ตอนนี้ <b>${baht2(b)}</b>`};
   $("#tfFrom").onchange=hint;hint();
-  $("#tfAmt").focus();$("#mCancel").onclick=closeSheet;
+  if(!ed)$("#tfAmt").focus();
+  $("#mCancel").onclick=closeSheet;
+  const tfd=$("#tfDel");
+  if(tfd)tfd.onclick=()=>{closeSheet();confirmSheet("ลบการโอนนี้?",()=>{
+    transfers=transfers.filter(x=>x.id!==ed.id);saveTransfers();renderMoney();toast("ลบแล้ว")})};
   $("#mSave").onclick=()=>{const amount=parseFloat($("#tfAmt").value);
     if(!amount||amount<=0){$("#tfAmt").focus();return}
     const from=$("#tfFrom").value,to=$("#tfTo").value;
     if(from===to){toast("เลือกบัญชีต้นทางกับปลายทางให้ต่างกัน");return}
     const date=$("#tfDate").value||todayKey();
+    if(ed){ed.from=from;ed.to=to;ed.amount=amount;ed.date=date;ed.note=$("#tfNote").value.trim();
+      saveTransfers();curMonth=monthKey(date);closeSheet();renderMoney();toast("บันทึกแล้ว ✓");return}
     transfers.push({id:uid(),from:from,to:to,amount:amount,date:date,note:$("#tfNote").value.trim()});
     saveTransfers();curMonth=monthKey(date);closeSheet();renderMoney();
     toast(`โอน ${baht2(amount)} → ${accOf(to).name} ✓`)}}
@@ -1860,25 +1917,30 @@ function renderMoney(){const[y,m]=curMonth.split("-").map(Number);
       const sign=accFilter?(f.to===accFilter?"+":"−"):"";
       li.className="tx tf";
       li.innerHTML=`<span class="tdot">⇄</span>
-        <span class="ti"><span class="n">${esc(f.note||"โอนเงิน")}</span>
+        <span class="ti" role="button"><span class="n">${esc(f.note||"โอนเงิน")} ✎</span>
           <span class="s">${esc(fn)} → ${esc(tn)} · ${dfmt(f.date)}</span></span>
         <span class="amt tf">${sign}${baht(f.amount).slice(1)}</span>
         <button class="del" aria-label="Delete">✕</button>`;
+      li.querySelector(".ti").onclick=()=>transferModal(f);
       li.querySelector(".del").onclick=()=>{transfers=transfers.filter(x=>x.id!==f.id);saveTransfers();renderMoney()};
       ul.appendChild(li);return}
     const t=r.o,c=catOf(t.cat);li.className="tx";
     const an=(accOn&&accounts.length)?" · "+esc(accOf(txAcc(t)).name):"";
     li.innerHTML=`<span class="tdot" style="background:${c.c}">${esc(c.nm[0]||"?")}</span>
-      <span class="ti"><span class="n">${esc(t.note||c.nm)}</span><span class="s">${esc(c.nm)}${an} · ${dfmt(t.date)}</span></span>
+      <span class="ti" role="button"><span class="n">${esc(t.note||c.nm)} ✎</span><span class="s">${esc(c.nm)}${an} · ${dfmt(t.date)}</span></span>
       <span class="amt ${t.type}">${t.type==="in"?"+":"−"}${baht(t.amount).slice(1)}</span>
       ${t.slip?`<button class="slipview" aria-label="ดูสลิป" title="ดูสลิป">🧾</button>`:""}
       <button class="del" aria-label="Delete">✕</button>`;
     if(t.slip)li.querySelector(".slipview").onclick=()=>viewSlip(t);
+    li.querySelector(".ti").onclick=()=>txModal(t.type,{amount:t.amount,cat:t.cat,note:t.note,date:t.date,acc:txAcc(t),hasSlip:!!t.slip},t);
     li.querySelector(".del").onclick=()=>{if(t.slip)delPhoto(t.id);txs=txs.filter(x=>x.id!==t.id);saveTx();renderMoney()};
     ul.appendChild(li)})}
-function txModal(type,pre){const cats=type==="in"?IN_CATS:OUT_CATS;let selCat=(pre&&pre.cat)||cats[0].id;
+/* ed = รายการเดิมที่กำลังแก้ (ไม่ส่งมา = เพิ่มรายการใหม่) */
+function txModal(type,pre,ed){const cats=type==="in"?IN_CATS:OUT_CATS;let selCat=(pre&&pre.cat)||cats[0].id;
+  if(!cats.some(c=>c.id===selCat))selCat=cats[0].id;
   const preAcc=(pre&&pre.acc)||accFilter||MAIN_ACC,showAcc=accOn&&accounts.length>0;
-  openSheet(`<h3>${type==="in"?"เพิ่มรายรับ · Income":"เพิ่มรายจ่าย · Expense"}</h3>
+  openSheet(`<h3>${ed?"แก้ไขรายการ":(type==="in"?"เพิ่มรายรับ · Income":"เพิ่มรายจ่าย · Expense")}</h3>
+    ${ed?`<div class="hintline">ชนิด: <b>${type==="in"?"รายรับ":"รายจ่าย"}</b> · <button class="linkbtn" id="mSwap">สลับเป็น${type==="in"?"รายจ่าย":"รายรับ"}</button></div>`:""}
     ${pre&&pre.raw?`<div class="parsed">อ่านจาก SCB: <b>฿${pre.amount||"?"}</b>${pre.note?" · "+esc(pre.note):""} <span style="color:var(--ink-3)">(แก้ไขได้)</span></div>`:""}
     <label class="fl">จำนวนเงิน (บาท)</label><input class="amtin" id="mAmt" type="number" inputmode="decimal" placeholder="0" value="${(pre&&pre.amount)||""}">
     <label class="fl">หมวด</label><div class="catpick" id="mCat"></div>
@@ -1887,9 +1949,11 @@ function txModal(type,pre){const cats=type==="in"?IN_CATS:OUT_CATS;let selCat=(p
     <label class="fl">วันที่</label><input type="date" id="mDate" value="${(pre&&pre.date)||todayKey()}">
     <label class="fl">สลิป (ไม่บังคับ)</label>
     <img class="dphoto" id="slImg" alt="สลิป" ${pre&&pre.slip?"":"hidden"} ${pre&&pre.slip?`src="${pre.slip}"`:""}>
-    <button class="photobtn" id="slBtn">📷 ${pre&&pre.slip?"เปลี่ยนสลิป":"แนบรูปสลิป"}</button>
+    <button class="photobtn" id="slBtn">📷 ${(pre&&(pre.slip||pre.hasSlip))?"เปลี่ยนสลิป":"แนบรูปสลิป"}</button>
     <input type="file" id="slFile" accept="image/*" hidden>
-    <div class="row2"><button class="cancel" id="mCancel">Cancel</button><button class="save" id="mSave">บันทึก</button></div>`);
+    ${pre&&pre.hasSlip?`<div class="hintline">มีสลิปแนบอยู่แล้ว — แนบรูปใหม่เพื่อแทนที่</div>`:""}
+    ${ed?`<button class="photobtn" id="mDel" style="color:var(--rose);border-color:var(--rose)">🗑 ลบรายการนี้</button>`:""}
+    <div class="row2"><button class="cancel" id="mCancel">ยกเลิก</button><button class="save" id="mSave">บันทึก</button></div>`);
   let slipData=pre&&pre.slip!==undefined?pre.slip:undefined;
   const cp=$("#mCat");cats.forEach(c=>{const b=document.createElement("button");b.textContent=c.nm;b.dataset.id=c.id;
     if(c.id===selCat){b.classList.add("sel");b.style.background=c.c}
@@ -1897,9 +1961,22 @@ function txModal(type,pre){const cats=type==="in"?IN_CATS:OUT_CATS;let selCat=(p
   $("#slBtn").onclick=()=>$("#slFile").click();
   $("#slFile").onchange=async e=>{const f=e.target.files[0];if(!f)return;$("#slBtn").textContent="กำลังบีบอัด…";
     const data=await compressImage(f,1200,.7);if(data){slipData=data;$("#slImg").src=data;$("#slImg").hidden=false}$("#slBtn").textContent="📷 เปลี่ยนสลิป"};
-  $("#mAmt").focus();$("#mCancel").onclick=closeSheet;
+  if(!ed)$("#mAmt").focus();
+  $("#mCancel").onclick=closeSheet;
+  const sw=$("#mSwap");
+  if(sw)sw.onclick=()=>txModal(type==="in"?"out":"in",
+    {amount:$("#mAmt").value,note:$("#mNote").value.trim(),date:$("#mDate").value,
+     acc:showAcc?$("#mAcc").value:MAIN_ACC,hasSlip:!!(pre&&pre.hasSlip)},ed);
+  const del=$("#mDel");
+  if(del)del.onclick=()=>{closeSheet();confirmSheet("ลบรายการนี้?",()=>{
+    if(ed.slip)delPhoto(ed.id);txs=txs.filter(x=>x.id!==ed.id);saveTx();renderMoney();toast("ลบแล้ว")})};
   $("#mSave").onclick=()=>{const amount=parseFloat($("#mAmt").value);if(!amount||amount<=0){$("#mAmt").focus();return}
     const acc=showAcc?($("#mAcc").value||MAIN_ACC):MAIN_ACC;
+    if(ed){ed.type=type;ed.amount=amount;ed.cat=selCat;ed.note=$("#mNote").value.trim();
+      ed.date=$("#mDate").value||ed.date;ed.acc=acc;
+      if(slipData){putPhoto(ed.id,slipData);ed.slip=true}
+      saveTx();curMonth=monthKey(ed.date);if(accFilter&&accFilter!==acc)accFilter=acc;
+      closeSheet();renderMoney();toast("บันทึกแล้ว ✓");return}
     const t={id:uid(),type,amount,cat:selCat,note:$("#mNote").value.trim(),date:$("#mDate").value||todayKey(),acc:acc};
     if(slipData){putPhoto(t.id,slipData);t.slip=true}
     txs.push(t);saveTx();curMonth=monthKey(t.date);
@@ -1952,7 +2029,8 @@ function fallbackCopy(text,cb){const ta=document.createElement("textarea");ta.va
   document.body.appendChild(ta);ta.select();try{document.execCommand("copy");cb()}catch(e){toast("คัดลอกไม่สำเร็จ")}document.body.removeChild(ta)}
 
 /* modal + util */
-function openSheet(html){$("#sheet").innerHTML=html;$("#modal").classList.add("on")}
+function openSheet(html,cls){const sh=$("#sheet");sh.className="sheet"+(cls?" "+cls:"");
+  sh.innerHTML=html;sh.scrollTop=0;$("#modal").classList.add("on")}
 function closeSheet(){$("#modal").classList.remove("on")}
 $("#modal").addEventListener("click",e=>{if(e.target===$("#modal"))closeSheet()});
 /* in-app confirm (browser confirm() is blocked in the sandbox) */
@@ -1993,6 +2071,7 @@ let wUnit=store.get("sd_w_unit","kg"),wHabitLink=store.get("sd_w_habit","");
 let wDay=todayKey(),wChartEx=store.get("sd_w_ex",""),wChartMetric=store.get("sd_w_metric",""),
     wRange=store.get("sd_w_range",90),wVolMetric=store.get("sd_w_vol","vol");
 let wChartMode=store.get("sd_w_mode","one"),wCmpEx=store.get("sd_w_cmp",[]),wCmpPct=store.get("sd_w_cmppct",true);
+let wExFilter=store.get("sd_w_exf","");   // กรองคลังท่าตามโปรแกรม ("" = ทุกท่า, "__none" = ยังไม่อยู่ในโปรแกรม)
 const saveExercises=()=>store.set("sd_exercises",exercises),saveWlogs=()=>store.set("sd_wlogs",wlogs),
       saveWbody=()=>store.set("sd_wbody",wbody),saveRoutines=()=>store.set("sd_wroutines",routines);
 const exKind=k=>EX_KINDS[k]||EX_KINDS.strength;
@@ -2206,12 +2285,32 @@ function renderWVolume(){const chart=$("#wVolChart");if(!chart)return;
     const lab=!c.v?"":c.v>=1000?(Math.round(c.v/100)/10)+"k":n1(Math.round(c.v*10)/10);
     col.innerHTML=`<div class="cval">${esc(lab)}</div><div class="bar${c.now?" today":""}" style="height:${c.v/max*100}%"></div><div class="cd">${c.lab}</div>`;
     chart.appendChild(col)})}
+const exInRt=(e,rid)=>{const r=routines.find(x=>x.id===rid);return !!r&&(r.exIds||[]).includes(e.id)};
+const exNoRt=e=>!routines.some(r=>(r.exIds||[]).includes(e.id));
+function renderWExFilter(){const box=$("#wExFilter");if(!box)return;box.innerHTML="";
+  if(wExFilter&&wExFilter!=="__none"&&!routines.some(r=>r.id===wExFilter)){wExFilter="";store.set("sd_w_exf","")}
+  if(!routines.length){box.hidden=true;return}
+  box.hidden=false;
+  const mk=(id,label,count)=>{const b=document.createElement("button");
+    b.className="chip"+(wExFilter===id?" on":"");
+    b.innerHTML=esc(label)+(count===undefined?"":`<span class="cbadge">${count}</span>`);
+    b.onclick=()=>{wExFilter=wExFilter===id?"":id;store.set("sd_w_exf",wExFilter);renderWEx()};
+    box.appendChild(b)};
+  mk("","ทุกท่า",exercises.length);
+  routines.forEach(r=>mk(r.id,r.name,exercises.filter(e=>exInRt(e,r.id)).length));
+  const none=exercises.filter(exNoRt).length;
+  if(none)mk("__none","ยังไม่อยู่ในโปรแกรม",none)}
 function renderWEx(){const list=$("#wExList");if(!list)return;list.innerHTML="";
+  renderWExFilter();
+  const shown=exercises.filter(e=>!wExFilter||(wExFilter==="__none"?exNoRt(e):exInRt(e,wExFilter)));
   if(!exercises.length)list.innerHTML=`<div class="empty"><div class="big">🏋️</div>
     ยังไม่มีท่าออกกำลังกาย — แตะท่ายอดนิยมด้านล่าง หรือ ＋ ท่าใหม่ เพื่อตั้งชื่อเอง</div>`;
-  exercises.forEach(e=>{const row=document.createElement("div");row.className="exrow";row.dataset.id=e.id;
+  else if(!shown.length)list.innerHTML=`<div class="empty"><div class="big">🗂️</div>
+    ${wExFilter==="__none"?"ทุกท่าอยู่ในโปรแกรมแล้ว 🎉":"โปรแกรมนี้ยังไม่มีท่า — กด ＋ ท่าใหม่ หรือแก้ท่าที่มีอยู่แล้วให้เข้าโปรแกรมนี้"}</div>`;
+  shown.forEach(e=>{const row=document.createElement("div");row.className="exrow";row.dataset.id=e.id;
     const l=lastLog(e.id),cnt=exLogs(e.id).length;
-    const sub=[exKind(e.kind).nm,e.mus||"",l?"ล่าสุด "+dfmtShort(l.date):"ยังไม่มีบันทึก",cnt?cnt+" ครั้ง":""].filter(Boolean).join(" · ");
+    const rn=routines.filter(r=>(r.exIds||[]).includes(e.id)).map(r=>r.name).join(" · ");
+    const sub=[exKind(e.kind).nm,e.mus||"",rn?"🗂️ "+rn:"",l?"ล่าสุด "+dfmtShort(l.date):"ยังไม่มีบันทึก",cnt?cnt+" ครั้ง":""].filter(Boolean).join(" · ");
     row.innerHTML=`<button class="grip" aria-label="ลากเพื่อเรียงลำดับ">⠿</button>
       <span class="dot" style="background:${e.color}"></span>
       <span class="nm" role="button">${esc(e.name)} ✎<small>${esc(sub)}</small></span>
@@ -2221,14 +2320,21 @@ function renderWEx(){const list=$("#wExList");if(!list)return;list.innerHTML="";
     row.querySelector(".nm").onclick=()=>exerciseModal(e);
     row.querySelector(".rm").onclick=()=>deleteExercise(e);
     list.appendChild(row)});
+  /* ตอนกรองอยู่ จะเรียงเฉพาะท่าที่เห็น โดยสลับเข้าไปในช่องเดิม ท่าที่ถูกซ่อนจึงไม่หายและไม่ขยับ */
   makeSortable(list,".exrow",".grip",ids=>{const map={};exercises.forEach(e=>map[e.id]=e);
-    exercises=ids.map(id=>map[id]).filter(Boolean);saveExercises()});
+    const ordered=ids.map(id=>map[id]).filter(Boolean),slots=[];
+    exercises.forEach((e,i)=>{if(ids.includes(e.id))slots.push(i)});
+    const out=exercises.slice();slots.forEach((slot,k)=>{if(ordered[k])out[slot]=ordered[k]});
+    exercises=out;saveExercises()});
   const sg=$("#wStarter");sg.innerHTML="";
   const left=EX_STARTER.filter(s=>!exercises.some(e=>e.name===s.n));
   sg.hidden=!left.length;
   left.slice(0,10).forEach(s=>{const b=document.createElement("button");b.className="chip add";b.textContent="＋ "+s.n;
-    b.onclick=()=>{exercises.push({id:uid(),name:s.n,kind:s.k,mus:s.m,color:EX_COLORS[exercises.length%EX_COLORS.length],note:""});
-      saveExercises();renderWorkout();toast("เพิ่ม "+s.n+" แล้ว ✓")};sg.appendChild(b)})}
+    b.onclick=()=>{const ex={id:uid(),name:s.n,kind:s.k,mus:s.m,color:EX_COLORS[exercises.length%EX_COLORS.length],note:""};
+      exercises.push(ex);
+      /* กรองโปรแกรมไหนอยู่ ท่าที่เพิ่มก็เข้าโปรแกรมนั้นเลย */
+      const r=routines.find(x=>x.id===wExFilter);if(r){r.exIds=(r.exIds||[]).concat([ex.id]);saveRoutines()}
+      saveExercises();renderWorkout();toast("เพิ่ม "+s.n+" แล้ว ✓"+(r?" · เข้าโปรแกรม "+r.name:""))};sg.appendChild(b)})}
 function deleteExercise(e){const n=exLogs(e.id).length;
   confirmSheet(`ลบท่า "${e.name}"?`+(n?` บันทึก ${n} ครั้งของท่านี้จะถูกลบไปด้วย`:""),()=>{
     exercises=exercises.filter(x=>x.id!==e.id);wlogs=wlogs.filter(l=>l.exId!==e.id);
@@ -2237,8 +2343,11 @@ function deleteExercise(e){const n=exLogs(e.id).length;
     if(wChartEx===e.id){wChartEx="";store.set("sd_w_ex","")}
     saveExercises();saveWlogs();saveRoutines();renderWorkout();toast("ลบท่าแล้ว")},"ลบท่านี้")}
 
-function exerciseModal(e,preName,after,preKind){const edit=!!e,cur=e||{};
+function exerciseModal(e,preName,after,preKind,preRt){const edit=!!e,cur=e||{};
   let kind=cur.kind||preKind||"strength",color=cur.color||EX_COLORS[exercises.length%EX_COLORS.length];
+  /* ท่าอยู่ได้หลายโปรแกรม — เก็บเป็นรายชื่อโปรแกรมที่ติ๊กไว้ แล้วค่อย sync ตอนบันทึก */
+  let rts=edit?routines.filter(r=>(r.exIds||[]).includes(e.id)).map(r=>r.id)
+    :(preRt&&routines.some(r=>r.id===preRt)?[preRt]:[]);
   openSheet(`<h3>${edit?"แก้ไขท่าออกกำลังกาย":"ท่าใหม่ · New exercise"}</h3>
     <label class="fl">ชื่อท่า</label>
     <input id="exName" maxlength="40" placeholder="เช่น เบนช์เพรส, วิ่ง, แพลงก์" value="${esc(cur.name||preName||"")}">
@@ -2247,9 +2356,11 @@ function exerciseModal(e,preName,after,preKind){const edit=!!e,cur=e||{};
     <label class="fl">กลุ่มกล้ามเนื้อ (ไม่บังคับ)</label>
     <select id="exMus"><option value="">— ไม่ระบุ —</option>${MUSCLES.map(m=>`<option${m===(cur.mus||"")?" selected":""}>${m}</option>`).join("")}</select>
     <label class="fl">สี</label><div class="colorpick" id="exColor"></div>
+    <label class="fl">อยู่ในโปรแกรมฝึก (เลือกได้หลายโปรแกรม)</label>
+    <div class="chips" id="exRt" style="margin-bottom:11px"></div>
     <label class="fl">โน้ต (ไม่บังคับ)</label>
     <input id="exNote" maxlength="80" placeholder="เช่น จับกว้าง, เป้าหมาย 100 กก." value="${esc(cur.note||"")}">
-    <div class="hintline">เปลี่ยนชื่อ/สี/ชนิดได้ทุกเมื่อ บันทึกเดิมไม่หาย</div>
+    <div class="hintline">เปลี่ยนชื่อ · ชนิด · สี · โปรแกรม ได้ทุกเมื่อ บันทึกเดิมไม่หาย</div>
     ${edit?`<button class="photobtn" id="exDel" style="color:var(--rose);border-color:var(--rose)">🗑 ลบท่านี้</button>`:""}
     <div class="row2"><button class="cancel" id="mCancel">ยกเลิก</button><button class="save" id="mSave">บันทึก</button></div>`);
   $$("#exKind button").forEach(b=>b.onclick=()=>{kind=b.dataset.k;
@@ -2257,6 +2368,20 @@ function exerciseModal(e,preName,after,preKind){const edit=!!e,cur=e||{};
   const cp=$("#exColor");EX_COLORS.forEach(c=>{const b=document.createElement("button");b.style.background=c;
     b.setAttribute("aria-label","สี "+c);if(c===color)b.classList.add("sel");
     b.onclick=()=>{color=c;$$("#exColor button").forEach(x=>x.classList.remove("sel"));b.classList.add("sel")};cp.appendChild(b)});
+  const drawRt=()=>{const box=$("#exRt");box.innerHTML="";
+    routines.forEach(r=>{const on=rts.includes(r.id),b=document.createElement("button");
+      b.className="chip"+(on?" on":"");b.textContent=r.name;
+      b.onclick=()=>{rts=on?rts.filter(x=>x!==r.id):rts.concat([r.id]);drawRt()};box.appendChild(b)});
+    const nb=document.createElement("button");nb.className="chip add";nb.textContent="＋ โปรแกรมใหม่";
+    nb.onclick=()=>{box.innerHTML="";const w=document.createElement("span");w.className="rtnew";
+      w.innerHTML=`<input id="exRtNew" maxlength="30" placeholder="ชื่อโปรแกรม เช่น Push day"><button class="ok" aria-label="สร้าง">✓</button><button class="no" aria-label="ยกเลิก">✕</button>`;
+      box.appendChild(w);
+      const ok=()=>{const nm=$("#exRtNew").value.trim();if(!nm){$("#exRtNew").focus();toast("ตั้งชื่อโปรแกรมก่อนนะครับ");return}
+        const r={id:uid(),name:nm,exIds:[]};routines.push(r);saveRoutines();rts=rts.concat([r.id]);drawRt();toast("สร้างโปรแกรม "+nm+" แล้ว ✓")};
+      w.querySelector(".ok").onclick=ok;w.querySelector(".no").onclick=drawRt;
+      $("#exRtNew").addEventListener("keydown",ev=>{if(ev.key==="Enter")ok()});$("#exRtNew").focus()};
+    box.appendChild(nb)};
+  drawRt();
   if(!edit)$("#exName").focus();
   $("#mCancel").onclick=closeSheet;
   if(edit)$("#exDel").onclick=()=>{closeSheet();deleteExercise(e)};
@@ -2266,6 +2391,9 @@ function exerciseModal(e,preName,after,preKind){const edit=!!e,cur=e||{};
     let saved;
     if(edit){const it=exercises.find(x=>x.id===e.id);if(it){it.name=nm;it.kind=kind;it.mus=mus;it.color=color;it.note=note;saved=it}}
     else{saved={id:uid(),name:nm,kind:kind,mus:mus,color:color,note:note};exercises.push(saved)}
+    if(saved){routines.forEach(r=>{const has=(r.exIds||[]).includes(saved.id),want=rts.includes(r.id);
+      if(want&&!has)r.exIds=(r.exIds||[]).concat([saved.id]);
+      else if(!want&&has)r.exIds=r.exIds.filter(id=>id!==saved.id)});saveRoutines()}
     saveExercises();closeSheet();renderWorkout();toast(edit?"บันทึกแล้ว ✓":"เพิ่มท่าแล้ว ✓");
     if(after&&saved)after(saved)}}
 
@@ -2314,7 +2442,7 @@ function logSheet(log,exIdPre){
     <input id="wlNote" maxlength="80" placeholder="เช่น ฟอร์มดี, ไหล่ตึง" value="${editing?esc(log.note||""):""}">
     <button class="photobtn" id="wlEditEx">⚙ แก้ไขท่านี้ (ชื่อ · ชนิด · สี)</button>
     ${editing?`<button class="photobtn" id="wlDel" style="color:var(--rose);border-color:var(--rose)">🗑 ลบบันทึกนี้</button>`:""}
-    <div class="row2"><button class="cancel" id="mCancel">ยกเลิก</button><button class="save" id="mSave">บันทึก</button></div>`);
+    <div class="row2"><button class="cancel" id="mCancel">ยกเลิก</button><button class="save" id="mSave">บันทึก</button></div>`,"big");
   const draw=()=>{const box=$("#wlSets");box.innerHTML="";
     sets.forEach((s,i)=>{const row=document.createElement("div");row.className="setrow";
       row.innerHTML=`<span class="sn">${i+1}</span>`+setInputs(kind,s)+`<button class="srm" aria-label="ลบเซ็ตนี้">✕</button>`;
@@ -2428,7 +2556,7 @@ function routineSheet(r){const ids=r.exIds||[],done=rtDone(r);
     <div id="rtRows"></div>
     ${rest.length?`<button class="photobtn" id="rtAll">↺ ลงท่าที่เหลือจากครั้งล่าสุด (${rest.length} ท่า)</button>`:""}
     <button class="photobtn" id="rtEdit">⚙ แก้ไขโปรแกรมนี้</button>
-    <div class="row2"><button class="cancel" id="mCancel">ปิด</button></div>`);
+    <div class="row2"><button class="cancel" id="mCancel">ปิด</button></div>`,"big");
   const box=$("#rtRows");
   if(!ids.length)box.innerHTML=`<div class="hintline">ยังไม่มีท่าในโปรแกรมนี้ — กด ⚙ แก้ไขโปรแกรม เพื่อเพิ่มท่า</div>`;
   ids.forEach(id=>{const e=exOf(id),lg=rtLogged(id,wDay),prev=lastLog(id);
@@ -2459,7 +2587,7 @@ function routineEditor(r){const edit=!!r;let ids=(r&&r.exIds?r.exIds.slice():[])
     <div class="chips" id="rtAddChips" style="margin-bottom:10px"></div>
     <button class="photobtn" id="rtNewEx">＋ สร้างท่าใหม่</button>
     ${edit?`<button class="photobtn" id="rtDel" style="color:var(--rose);border-color:var(--rose)">🗑 ลบโปรแกรมนี้</button>`:""}
-    <div class="row2"><button class="cancel" id="mCancel">ยกเลิก</button><button class="save" id="mSave">บันทึก</button></div>`);
+    <div class="row2"><button class="cancel" id="mCancel">ยกเลิก</button><button class="save" id="mSave">บันทึก</button></div>`,"big");
   const draw=()=>{const sel=$("#rtSel");sel.innerHTML="";$("#rtN").textContent=ids.length;
     if(!ids.length)sel.innerHTML=`<div class="hintline">ยังไม่ได้เลือกท่า — แตะจากรายการด้านล่างได้เลย</div>`;
     ids.forEach((id,i)=>{const e=exOf(id),row=document.createElement("div");row.className="rtrow";
@@ -2531,7 +2659,7 @@ $("#wLabel").onclick=()=>openDatePicker({cur:()=>wDay,pick:wGoDay,
 $("#wCfg").onclick=workoutSettings;
 $("#wAdd").onclick=quickAddWorkout;
 $("#wQuick").addEventListener("keydown",e=>{if(e.key==="Enter")quickAddWorkout()});
-$("#wExNew").onclick=()=>exerciseModal();
+$("#wExNew").onclick=()=>exerciseModal(null,"",null,null,wExFilter);
 $("#wRtNew").onclick=()=>routineEditor();
 $("#wVolSel").onchange=e=>{wVolMetric=e.target.value;store.set("sd_w_vol",wVolMetric);renderWVolume()};
 $("#wBodyAdd").onclick=addBodyWeight;

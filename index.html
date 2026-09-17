@@ -421,6 +421,7 @@ a{color:inherit}
 .parsed{background:var(--surface-2);border:1px solid var(--line);border-radius:11px;padding:11px 13px;margin-bottom:11px;font-size:.85rem}
 .parsed b{font-family:"IBM Plex Mono",monospace}
 .hintline{font-size:.76rem;color:var(--ink-3);margin:-4px 2px 11px}
+.errline{font-size:.82rem;font-weight:600;color:var(--rose);margin:-4px 2px 11px}
 /* toggle switch + feature card */
 .switch{position:relative;display:inline-block;width:50px;height:30px;flex:none}
 .switch input[type=checkbox]{position:absolute;inset:0;width:100%;height:100%;margin:0;padding:0;opacity:0;z-index:2;border:none;background:none;cursor:pointer}
@@ -1444,19 +1445,24 @@ $("#addHabit").onclick=()=>{openSheet(`<h3>นิสัยใหม่ · New ha
 
 /* ===== MONEY ===== */
 const baht=n=>"฿"+Math.round(n).toLocaleString();
+/* ช่องจำนวนเงินเป็น type=text แล้วอ่านเอง — type=number ทิ้งค่าเลขไทย/ลูกน้ำเงียบๆ กดบันทึกแล้วเหมือนไม่มีอะไรเกิดขึ้น */
+const TH_DIG="\u0e50\u0e51\u0e52\u0e53\u0e54\u0e55\u0e56\u0e57\u0e58\u0e59";
+function parseAmount(v){if(v==null)return NaN;
+  const s=String(v).replace(/[\u0e50-\u0e59]/g,d=>TH_DIG.indexOf(d)).replace(/[,\s\u00a0\u0e3f]/g,"");
+  return s?parseFloat(s):NaN}
 let budget=store.get("sd_budget",0);
 function shiftMonth(delta){const[y,m]=curMonth.split("-").map(Number);const d=new Date(y,m-1+delta,1);
   curMonth=d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0");renderMoney()}
 $("#moPrev").onclick=()=>shiftMonth(-1);$("#moNext").onclick=()=>shiftMonth(1);
 function openMoneySettings(){openSheet(`<h3>ตั้งค่าการเงิน</h3>
   <label class="fl">งบใช้จ่ายต่อวัน (บาท)</label>
-  <input class="amtin" id="bAmt" type="number" inputmode="decimal" placeholder="0" value="${budget||""}">
+  <input class="amtin" id="bAmt" type="text" inputmode="decimal" autocomplete="off" placeholder="0" value="${budget||""}">
   <div class="hintline">ตั้ง 0 เพื่อปิดการเตือนงบ · ปุ่ม "Copy" ด้านบนคัดลอกรายการทั้งเดือนไปวางใน Google Sheets ได้</div>
   ${accSwitchRow("msAccSw")}
   <div class="row2" style="margin-top:11px"><button class="cancel" id="mCancel">ปิด</button><button class="save" id="bSave">บันทึก</button></div>`);
   $("#mCancel").onclick=closeSheet;
   $("#msAccSw").onchange=e=>{closeSheet();setAccOn(e.target.checked)};
-  $("#bSave").onclick=()=>{budget=Math.max(0,parseFloat($("#bAmt").value)||0);store.set("sd_budget",budget);closeSheet();renderMoney();toast("บันทึกงบแล้ว ✓")}}
+  $("#bSave").onclick=()=>{budget=Math.max(0,parseAmount($("#bAmt").value)||0);store.set("sd_budget",budget);closeSheet();renderMoney();toast("บันทึกงบแล้ว ✓")}}
 $("#moCfg").onclick=openMoneySettings;
 function daySpend(dateKey){return txs.filter(t=>t.type==="out"&&t.date===dateKey&&accMatch(t)).reduce((s,t)=>s+t.amount,0)}
 function renderBudget(){const card=$("#budgetCard");const spent=daySpend(todayKey());
@@ -1538,7 +1544,7 @@ function renderAccounts(){const strip=$("#accStrip");if(!strip)return;strip.inne
     b.onclick=()=>{accFilter=accFilter===a.id?"":a.id;renderMoney()}});
   const add=document.createElement("button");add.className="acc-add";add.textContent="＋";
   add.setAttribute("aria-label","สร้างบัญชีใหม่");add.onclick=()=>accountModal();strip.appendChild(add);
-  $("#tfBtn").disabled=!has;$("#tfBtn").style.opacity=has?"":".5"}
+}
 
 function accountModal(a){const edit=!!a;a=a||{};
   let color=a.color||ACC_COLORS[accounts.length%ACC_COLORS.length];
@@ -1588,25 +1594,38 @@ function deleteAccount(a){const bal=accBalance(a.id),n=txs.filter(t=>txAcc(t)===
     toast("ลบบัญชีแล้ว · เงินกลับเข้าบัญชีหลัก ✓")},"ลบบัญชี")}
 
 function transferModal(){const list=allAccounts();
-  if(list.length<2){toast("สร้างบัญชีย่อยก่อนถึงจะโอนได้");return}
+  if(list.length<2){openSheet(`<h3>⇄ โอนเงินระหว่างบัญชี</h3>
+    <div class="hintline">ตอนนี้มีแต่บัญชีหลัก ยังไม่มีปลายทางให้โอน — สร้างบัญชีย่อยอย่างน้อย 1 บัญชีก่อน</div>
+    <div class="row2"><button class="cancel" id="mCancel">ปิด</button><button class="save" id="mNew">＋ สร้างบัญชีย่อย</button></div>`);
+    $("#mCancel").onclick=closeSheet;$("#mNew").onclick=()=>accountModal();return}
   const from0=accFilter||MAIN_ACC,to0=(list.find(a=>a.id!==from0)||{}).id;
   openSheet(`<h3>⇄ โอนเงินระหว่างบัญชี</h3>
     <div class="hintline">ย้ายเงินระหว่างบัญชีของคุณเอง — ไม่นับเป็นรายรับหรือรายจ่าย ยอดรวมทุกบัญชีจึงไม่เปลี่ยน</div>
-    <label class="fl">จำนวนเงิน (บาท)</label><input class="amtin" id="tfAmt" type="number" inputmode="decimal" placeholder="0">
+    <label class="fl">จำนวนเงิน (บาท)</label><input class="amtin" id="tfAmt" type="text" inputmode="decimal" autocomplete="off" placeholder="0">
+    <div class="errline" id="tfErr" hidden></div>
     <label class="fl">จากบัญชี</label><select id="tfFrom">${accOpts(from0)}</select>
     <label class="fl">ไปยังบัญชี</label><select id="tfTo">${accOpts(to0)}</select>
     <div class="hintline" id="tfHint"></div>
     <label class="fl">วันที่</label><input type="date" id="tfDate" value="${todayKey()}">
     <label class="fl">บันทึก (ไม่บังคับ)</label><input id="tfNote" maxlength="60" placeholder="เช่น กันเงินค่าหอ">
     <div class="row2"><button class="cancel" id="mCancel">Cancel</button><button class="save" id="mSave">โอนเงิน</button></div>`);
-  const hint=()=>{const f=$("#tfFrom").value,b=accBalance(f);
-    $("#tfHint").innerHTML=`คงเหลือใน ${esc(accOf(f).name)} ตอนนี้ <b>${baht2(b)}</b>`};
-  $("#tfFrom").onchange=hint;hint();
+  const err=m=>{const e=$("#tfErr");e.textContent=m||"";e.hidden=!m};
+  const hint=()=>{const f=$("#tfFrom").value,b=accBalance(f),a=parseAmount($("#tfAmt").value);
+    $("#tfHint").innerHTML=`คงเหลือใน ${esc(accOf(f).name)} ตอนนี้ <b>${baht2(b)}</b>`+
+      (a>0?` · จะโอน <b>${baht2(a)}</b> เหลือ <b style="color:${b-a<0?"var(--rose)":"inherit"}">${baht2(b-a)}</b>`:"")};
+  /* ห้ามให้สองช่องชี้บัญชีเดียวกัน: สลับช่องตรงข้ามให้เอง */
+  const sync=which=>{const F=$("#tfFrom"),T=$("#tfTo");
+    if(F.value===T.value){const o=list.find(a=>a.id!==F.value);
+      if(which==="from"){if(o)T.value=o.id}else{const o2=list.find(a=>a.id!==T.value);if(o2)F.value=o2.id}}
+    err("");hint()};
+  $("#tfFrom").onchange=()=>sync("from");$("#tfTo").onchange=()=>sync("to");
+  $("#tfAmt").oninput=()=>{err("");hint()};hint();
   $("#tfAmt").focus();$("#mCancel").onclick=closeSheet;
-  $("#mSave").onclick=()=>{const amount=parseFloat($("#tfAmt").value);
-    if(!amount||amount<=0){$("#tfAmt").focus();return}
+  $("#mSave").onclick=()=>{const amount=parseAmount($("#tfAmt").value);
+    if(!(amount>0)){err(!$("#tfAmt").value.trim()?"ใส่จำนวนเงินที่ต้องการโอนก่อน":isNaN(amount)?"อ่านจำนวนเงินไม่ออก ใส่เป็นตัวเลข เช่น 3000":"จำนวนเงินต้องมากกว่า 0");
+      $("#tfAmt").focus();return}
     const from=$("#tfFrom").value,to=$("#tfTo").value;
-    if(from===to){toast("เลือกบัญชีต้นทางกับปลายทางให้ต่างกัน");return}
+    if(from===to){err("เลือกบัญชีต้นทางกับปลายทางให้ต่างกัน");return}
     const date=$("#tfDate").value||todayKey();
     transfers.push({id:uid(),from:from,to:to,amount:amount,date:date,note:$("#tfNote").value.trim()});
     saveTransfers();curMonth=monthKey(date);closeSheet();renderMoney();
@@ -1670,7 +1689,8 @@ function txModal(type,pre){const cats=type==="in"?IN_CATS:OUT_CATS;let selCat=(p
   const preAcc=(pre&&pre.acc)||accFilter||MAIN_ACC,showAcc=accOn&&accounts.length>0;
   openSheet(`<h3>${type==="in"?"เพิ่มรายรับ · Income":"เพิ่มรายจ่าย · Expense"}</h3>
     ${pre&&pre.raw?`<div class="parsed">อ่านจาก SCB: <b>฿${pre.amount||"?"}</b>${pre.note?" · "+esc(pre.note):""} <span style="color:var(--ink-3)">(แก้ไขได้)</span></div>`:""}
-    <label class="fl">จำนวนเงิน (บาท)</label><input class="amtin" id="mAmt" type="number" inputmode="decimal" placeholder="0" value="${(pre&&pre.amount)||""}">
+    <label class="fl">จำนวนเงิน (บาท)</label><input class="amtin" id="mAmt" type="text" inputmode="decimal" autocomplete="off" placeholder="0" value="${(pre&&pre.amount)||""}">
+    <div class="errline" id="mErr" hidden></div>
     <label class="fl">หมวด</label><div class="catpick" id="mCat"></div>
     ${showAcc?`<label class="fl">${type==="in"?"เข้าบัญชี":"หักจากบัญชี"}</label><select id="mAcc">${accOpts(preAcc)}</select>`:""}
     <label class="fl">บันทึก (ไม่บังคับ)</label><input id="mNote" placeholder="เช่น ข้าวเที่ยง, ค่ารถ" maxlength="60" value="${pre&&pre.note?esc(pre.note):""}">
@@ -1687,8 +1707,11 @@ function txModal(type,pre){const cats=type==="in"?IN_CATS:OUT_CATS;let selCat=(p
   $("#slBtn").onclick=()=>$("#slFile").click();
   $("#slFile").onchange=async e=>{const f=e.target.files[0];if(!f)return;$("#slBtn").textContent="กำลังบีบอัด…";
     const data=await compressImage(f,1200,.7);if(data){slipData=data;$("#slImg").src=data;$("#slImg").hidden=false}$("#slBtn").textContent="📷 เปลี่ยนสลิป"};
+  const mErr=m=>{const e=$("#mErr");e.textContent=m||"";e.hidden=!m};
+  $("#mAmt").oninput=()=>mErr("");
   $("#mAmt").focus();$("#mCancel").onclick=closeSheet;
-  $("#mSave").onclick=()=>{const amount=parseFloat($("#mAmt").value);if(!amount||amount<=0){$("#mAmt").focus();return}
+  $("#mSave").onclick=()=>{const amount=parseAmount($("#mAmt").value);
+    if(!(amount>0)){mErr(!$("#mAmt").value.trim()?"ใส่จำนวนเงินก่อน":isNaN(amount)?"อ่านจำนวนเงินไม่ออก ใส่เป็นตัวเลข เช่น 120":"จำนวนเงินต้องมากกว่า 0");$("#mAmt").focus();return}
     const acc=showAcc?($("#mAcc").value||MAIN_ACC):MAIN_ACC;
     const t={id:uid(),type,amount,cat:selCat,note:$("#mNote").value.trim(),date:$("#mDate").value||todayKey(),acc:acc};
     if(slipData){putPhoto(t.id,slipData);t.slip=true}
